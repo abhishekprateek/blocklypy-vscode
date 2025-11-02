@@ -2,6 +2,14 @@
 
 All significant updates to the "blocklypy" extension are tracked in this file.
 
+## Unreleased
+
+## Added
+
+- Addded Pybricks templates and auto-detection for LEGO hubs
+- Added comprehensive "Getting Started" walktrough
+- Added idle disconnection feature
+
 ## [0.7.13] - 2025-10-31
 
 ## Added

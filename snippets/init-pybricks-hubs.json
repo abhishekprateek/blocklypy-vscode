@@ -1,18 +1,20 @@
 {
-  "hub": {
+  "Pybricks Template - Universal": {
     "scope": "python",
-    "prefix": "init",
-    "description": "Imports and initializes the Spike Prime hub.",
+    "prefix": [
+      "init pybricks"
+    ],
+    "name": "Pybricks Template - Universal",
+    "description": "Insert Pybricks template with hub type selection",
     "body": [
-      "from pybricks.hubs import PrimeHub",
+      "from pybricks.hubs import ${1|PrimeHub,EssentialHub,InventorHub,CityHub,TechnicHub|}",
       "from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSensor",
       "from pybricks.parameters import Button, Color, Direction, Port, Side, Stop",
       "from pybricks.robotics import DriveBase",
       "from pybricks.tools import wait, StopWatch",
       "",
-      "hub = PrimeHub()",
-      "",
-      ""
+      "hub = ${1}()",
+      "$0"
     ]
   }
 }

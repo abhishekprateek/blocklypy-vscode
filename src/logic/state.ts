@@ -52,6 +52,25 @@ export function withComplexState(
     };
 }
 
+export function waitForStateWithTimeout(
+    stateProp: StateProp,
+    value: boolean,
+    timeoutMs: number,
+) {
+    return new Promise((resolve) => {
+        const timeoutHandle = setTimeout(() => {
+            resolve(false);
+        }, timeoutMs);
+        const disposable = onStateChange((e) => {
+            if (e.prop === stateProp && e.value === value) {
+                clearTimeout(timeoutHandle);
+                disposable.dispose();
+                resolve(true);
+            }
+        });
+    });
+}
+
 export function hasState(stateProp: StateProp) {
     return state[stateProp];
 }

@@ -271,6 +271,19 @@
         "category": "BlocklyPy Commander",
         "icon": "$(graph-line)",
         "enablement": "blocklypy-vscode.isConnected && blocklypy-vscode.ConnectedDeviceType =~ /pybricks/"
+      },
+      {
+        "command": "blocklypy-vscode.insertPybricksTemplate",
+        "title": "Insert Pybricks Template",
+        "category": "BlocklyPy Commander",
+        "icon": "$(insert)",
+        "enablement": "editorLangId == python"
+      },
+      {
+        "command": "blocklypy-vscode.createPybricksFile",
+        "title": "New Pybricks Python File",
+        "category": "BlocklyPy Commander",
+        "icon": "$(new-file)"
       }
     ],
     "viewsContainers": {
@@ -537,6 +550,11 @@
           "group": "navigation@1"
         }
       ],
+      "file/newFile": [
+        {
+          "command": "blocklypy-vscode.createPybricksFile"
+        }
+      ],
       "commandPalette": [
         {
           "command": "blocklypy-vscode.manualConnectDevice",
@@ -600,7 +618,7 @@
     "snippets": [
       {
         "language": "python",
-        "path": "./snippets/spikehub1.json"
+        "path": "./snippets/init-pybricks-hubs.json"
       }
     ],
     "breakpoints": [
@@ -695,7 +713,7 @@
           {
             "id": "createProgram",
             "title": "Create or Open a Python Program",
-            "description": "Create a new Python file or open an existing LEGO program file (.llsp3, .lms, etc.) to start programming your robot.\n[Create New Python File](command:workbench.action.files.newUntitledFile)\n[Open Python or LEGO File](command:workbench.action.files.openFile)",
+            "description": "Create a new Python file or open an existing LEGO program file (.llsp3, .lms, etc.) to start programming your robot.\n[Create New Python File](command:blocklypy-vscode.createPybricksFile)\n[Open Python or LEGO File](command:workbench.action.files.openFile)",
             "media": {
               "markdown": "docs/walkthrough/step2-program.md"
             },

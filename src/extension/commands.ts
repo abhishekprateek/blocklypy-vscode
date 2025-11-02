@@ -9,6 +9,10 @@ import { disconnectDeviceAsync } from '../commands/disconnect-device';
 import { moveSlotAny } from '../commands/move-slot';
 import { startUserProgramAsync } from '../commands/start-user-program';
 import { stopUserProgramAsync } from '../commands/stop-user-program';
+import {
+    createPybricksFile,
+    insertPybricksTemplate,
+} from '../commands/template-helpers';
 import { DeviceOSType, StartMode } from '../communication/clients/base-client';
 import { ConnectionManager } from '../communication/connection-manager';
 import { BLOCKLYPY_COMMANDS_VIEW_ID, EXTENSION_KEY } from '../const';
@@ -55,6 +59,8 @@ export enum Commands {
         '.promptDeviceNotificationPlotFilter',
     StartREPL = EXTENSION_KEY + '.startREPL',
     StartHubMonitor = EXTENSION_KEY + '.startHubMonitor',
+    InsertPybricksTemplate = EXTENSION_KEY + '.insertPybricksTemplate',
+    CreatePybricksFile = EXTENSION_KEY + '.createPybricksFile',
     // StartJupyter = EXTENSION_KEY + '.startJupyter',
 }
 
@@ -283,6 +289,18 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
                     );
                 },
             );
+        },
+    },
+    {
+        command: Commands.InsertPybricksTemplate,
+        handler: async () => {
+            await insertPybricksTemplate();
+        },
+    },
+    {
+        command: Commands.CreatePybricksFile,
+        handler: async () => {
+            await createPybricksFile();
         },
     },
 ];

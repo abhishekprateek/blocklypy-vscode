@@ -101,6 +101,10 @@ export class PybricksBleClient extends BaseClient {
         return this._capabilities;
     }
 
+    public get pnpId() {
+        return this._version?.pnpId;
+    }
+
     public get connected() {
         return this.metadata?.peripheral?.state === 'connected';
     }

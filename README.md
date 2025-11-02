@@ -19,6 +19,8 @@ Streamline your Pybricks and HubOS LEGO SPIKE coding experience with:
 - **Open and convert** majority of the LEGO robotics file formats
 - **Receive program status** and **display hub output messages**
 - **Plot** live sensor data and save to csv
+- **Quick-start templates** for Pybricks Python files with hub-specific imports\
+  and auto detectied devices
 - Experimental: **Debug** your code in VSCode
 
 ## Getting Started
@@ -26,8 +28,11 @@ Streamline your Pybricks and HubOS LEGO SPIKE coding experience with:
 1. **Install** this extension from the
    [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=afarago.blocklypy-vscode).
 2. **Connect** your LEGO Hub via Bluetooth.
-3. **Open** your Python or LEGO robotics files.
-4. **Use** the command palette (`Ctrl+Shift+P`) to access commands.
+3. **Create** a new Pybricks Python file with templates:
+   - Open Command Palette (`Ctrl+Shift+P`)
+   - Type "New Pybricks Python File" and select your hub type
+   - Or type `pybricks` in a Python file to insert a template snippet
+4. **Run** your program by pressing `F5` or using the Run button.
 
 ## Guide: Fun First Things to Explore
 
@@ -201,17 +206,35 @@ The extension now supports launching a VSCode debug session with a Pybricks hub
 is connected.
 
 Behind the scenes unofficial AppData channel is used, and due to the limitation
-of the framework slightly alters the code by injecting debug traps.
-This normally should not affect your code.
+of the framework slightly alters the code by injecting debug traps. This
+normally should not affect your code.
 
-### Usage:
+### Usage
 
 1. Set breakpoints in your code prior to launching the debug sessions
 2. Launch the debug session.
-3. After the debugger is stopped on a breakpoint, Step/Continue to the next breakpoint
+3. After the debugger is stopped on a breakpoint, Step/Continue to the next
+   breakpoint
 
-Disclaimer: it is still an early preview, might result in minor problems.
-Code is not stopped on any non-breakpoints.
+Disclaimer: it is still an early preview, might result in minor problems. Code
+is not stopped on any non-breakpoints.
+
+## Pybricks Templates
+
+Quickly start new projects with pre-configured templates for different LEGO
+hubs. Templates include common imports and hub initialization code.
+
+**Available methods:**
+
+- **Snippets**: Type `pybricks`, `primehub`, `inventorhub`, etc. in a Python
+  file
+- **Command**: Use "Insert Pybricks Template" to add to current file
+- **New File**: Use "New Pybricks Python File" to create a templated file
+
+The template will also include auto detected devices on any connected device.
+
+Supported hubs: SPIKE Prime, SPIKE Essential, MINDSTORMS Robot Inventor, City
+Hub, Technic Hub.
 
 ## Limitations
 
