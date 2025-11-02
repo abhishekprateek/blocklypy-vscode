@@ -229,10 +229,12 @@ export class BLELayer extends BaseLayer {
         }
         if (state === 'poweredOff') {
             this.stopScanning();
-            // TODO: do nothing else for now, device cannot disconnect properly anyhow
-            // if (ConnectionManager.client?.parent === this) {
-            //     await ConnectionManager.client.disconnect();
-            // }
+            // TODO: device cannot disconnect properly, revisit this later
+            try {
+                if (ConnectionManager.client?.parent === this) {
+                    void ConnectionManager.client.disconnect().catch(console.error);
+                }
+            } catch {}
         }
     }
 
@@ -297,14 +299,19 @@ export class BLELayer extends BaseLayer {
 
     public override waitForReadyPromise(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
+            // if noble is already powered on, resolve immediately
             if (this._noble?.state === 'poweredOn') {
-                this.state = ConnectionState.Disconnected; // initialized successfully
+                if (this.state === ConnectionState.Initializing)
+                    this.state = ConnectionState.Disconnected; // initialized successfully
                 resolve();
                 return;
             }
+
+            // otherwise wait for noble to power on
             this._noble?.once('stateChange', (state) => {
                 if (state === 'poweredOn') {
-                    this.state = ConnectionState.Disconnected; // initialized successfully
+                    if (this.state === ConnectionState.Initializing)
+                        this.state = ConnectionState.Disconnected; // initialized successfully
                     resolve();
                 } else {
                     reject(new Error(`BLE state changed to ${state}, not poweredOn`));
