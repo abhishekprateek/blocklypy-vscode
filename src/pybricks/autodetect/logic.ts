@@ -10,6 +10,7 @@ import { ConnectionManager } from '../../communication/connection-manager';
 import { loadPythonAssetModule } from '../../logic/compile';
 import { StateProp, waitForStateWithTimeout } from '../../logic/state';
 import { PnpId } from '../ble-device-info-service/protocol';
+import { HubType } from '../ble-lwp3-service/protocol';
 import {
     DEVICE_NAMES,
     HubTypeDescriptors,
@@ -19,11 +20,12 @@ import {
 
 const AUTODETECT_PREFIX = 'AUTODETECT';
 const AUTODETECT_TIMEOUT_MS = 10 * 1000;
-const AUTODETECT_SCRIPT_NAME = 'hub-autodetect-small.py';
+const AUTODETECT_SCRIPT_NAME = 'hub-autodetect.py';
+// const AUTODETECT_MOVE_SCRIPT_NAME = 'hub-autodetect-move.py';
 
 export async function autodetectPybricksHub(): Promise<{
     hubType: HubTypeDescriptorType | undefined;
-    portTypes: Record<string, number>;
+    portTypes: Record<string, number | string>;
 }> {
     const client0 = ConnectionManager.client;
     if (
@@ -37,13 +39,16 @@ export async function autodetectPybricksHub(): Promise<{
     const client: PybricksBleClient = client0;
 
     let hubType: HubTypeDescriptorType | undefined = undefined;
-    let portTypes: Record<string, number> = {};
+    let portTypes: Record<string, number | string> = {};
 
     // Try to autodetect the hub type
     const pnpId = client.pnpId;
     hubType = getHubTypeDescriptor(pnpId);
 
     try {
+        if (hubType?.productId === HubType.MoveHub)
+            throw new Error('MoveHub autodetection not supported');
+
         const { content } = await loadPythonAssetModule(AUTODETECT_SCRIPT_NAME);
         if (content) {
             // Start listening for output before sending the code
@@ -63,13 +68,15 @@ export async function autodetectPybricksHub(): Promise<{
                     // Parse the detection result
                     const detectionResult = JSON.parse(
                         output.replace(/'/g, '"'),
-                    ) as Array<[string, number]>;
+                    ) as Array<[string, number | string]>;
                     console.debug('Device detection result:', output);
 
                     // returns an array of [port, puptype]
-                    detectionResult.forEach(([port, puptype]: [string, number]) => {
-                        portTypes[port] = puptype;
-                    });
+                    detectionResult.forEach(
+                        ([port, puptype]: [string, number | string]) => {
+                            portTypes[port] = puptype;
+                        },
+                    );
                 } catch {
                     console.error('Failed to parse detection result:', output);
                 }
@@ -133,7 +140,7 @@ function waitForReplOutput(
     });
 }
 
-export function generateDetectedPortCode(portTypes: Record<string, number>): {
+export function generateDetectedPortCode(portTypes: Record<string, number | string>): {
     code: string;
     longestInitLength: number;
 } {
@@ -146,30 +153,41 @@ export function generateDetectedPortCode(portTypes: Record<string, number>): {
         const puptype = portTypes[port];
         // code += `\nport_${port} = PUPDevice(Port.${port})`
         const pcl = port.toLowerCase();
-        let deviceName = DEVICE_NAMES[puptype] || `Unknown device ${puptype}`;
+        let deviceName =
+            typeof puptype === 'number'
+                ? DEVICE_NAMES[puptype] || `Unknown device ${puptype}`
+                : puptype;
         let deviceVar = '';
         let deviceInit = '';
         switch (puptype) {
             case 0:
                 continue;
             case 63:
+            case 'ForceSensor':
                 deviceVar = `force_${pcl}`;
                 deviceInit = `ForceSensor(Port.${port})`;
                 autodevices[deviceVar] = [deviceVar, deviceInit, deviceName];
                 break;
             case 62:
+            case 'UltrasonicSensor':
                 deviceVar = `usensor_${pcl}`;
                 deviceInit = `UltrasonicSensor(Port.${port})`;
                 autodevices[deviceVar] = [deviceVar, deviceInit, deviceName];
                 break;
             case 61:
-            case 37:
+            case 'ColorSensor':
                 deviceVar = `color_${pcl}`;
                 deviceInit = `ColorSensor(Port.${port})`;
                 autodevices[deviceVar] = [deviceVar, deviceInit, deviceName];
                 break;
+            case 37:
+            case 'ColorDistanceSensor':
+                deviceVar = `color_${pcl}`;
+                deviceInit = `ColorDistanceSensor(Port.${port})`;
+                autodevices[deviceVar] = [deviceVar, deviceInit, deviceName];
+                break;
             default:
-                if (MOTOR_SIZES[puptype]) {
+                if (isMotor(puptype)) {
                     deviceVar = `motor_${pcl}`;
                     deviceInit = `Motor(Port.${port})`;
                     motor_objects[port] = `motor_${pcl}`; //!!
@@ -187,47 +205,57 @@ export function generateDetectedPortCode(portTypes: Record<string, number>): {
     if (Object.keys(motor_objects).length >= 2) {
         const entries = Object.entries(motor_objects); // [port, motorVar]
 
-        // Helper to sort pairs by descending motor size
-        const sortBySizeDesc = (a: { size: number }, b: { size: number }) =>
-            (b.size ?? 0) - (a.size ?? 0);
+        const isDeviceByNumericIds = Object.entries(portTypes).every(
+            ([_, id]) => typeof id === 'number',
+        );
 
-        // 1) Find any matching motors with identical puptype, prefer larger motors first
-        const sameTypePairs = [] as Array<{ m1: string; m2: string; size: number }>;
-        for (let i = 0; i < entries.length; i++) {
-            const [port1, m1] = entries[i];
-            const pt1 = portTypes[port1];
-            for (let j = i + 1; j < entries.length; j++) {
-                const [port2, m2] = entries[j];
-                const pt2 = portTypes[port2];
-                if (pt1 === pt2) {
-                    const size = MOTOR_SIZES[pt1] ?? 0;
-                    sameTypePairs.push({ m1, m2, size });
-                }
-            }
-        }
-        sameTypePairs.sort(sortBySizeDesc);
+        if (isDeviceByNumericIds) {
+            // Helper to sort pairs by descending motor size
+            const sortBySizeDesc = (a: { size: number }, b: { size: number }) =>
+                (b.size ?? 0) - (a.size ?? 0);
 
-        motorpair = sameTypePairs[0];
-
-        // 2) If none, find pairs with the same motor size (via MOTOR_SIZES), prefer larger size
-        if (!motorpair) {
-            const sameSizePairs = [] as Array<{ m1: string; m2: string; size: number }>;
+            // 1) Find any matching motors with identical puptype, prefer larger motors first
+            const sameTypePairs = [] as Array<{ m1: string; m2: string; size: number }>;
             for (let i = 0; i < entries.length; i++) {
                 const [port1, m1] = entries[i];
-                const size1 = MOTOR_SIZES[portTypes[port1]];
-                if (size1 === undefined) continue;
+                const pt1 = portTypes[port1] as number;
                 for (let j = i + 1; j < entries.length; j++) {
                     const [port2, m2] = entries[j];
-                    const size2 = MOTOR_SIZES[portTypes[port2]];
-                    if (size2 === undefined) continue;
-                    if (size1 === size2) {
-                        sameSizePairs.push({ m1, m2, size: size1 });
+                    const pt2 = portTypes[port2] as number;
+                    if (pt1 === pt2) {
+                        const size = MOTOR_SIZES[pt1] ?? 0;
+                        sameTypePairs.push({ m1, m2, size });
                     }
                 }
             }
-            sameSizePairs.sort(sortBySizeDesc);
-            if (sameSizePairs.length) {
-                motorpair = sameSizePairs[0];
+            sameTypePairs.sort(sortBySizeDesc);
+
+            motorpair = sameTypePairs[0];
+
+            // 2) If none, find pairs with the same motor size (via MOTOR_SIZES), prefer larger size
+            if (!motorpair) {
+                const sameSizePairs = [] as Array<{
+                    m1: string;
+                    m2: string;
+                    size: number;
+                }>;
+                for (let i = 0; i < entries.length; i++) {
+                    const [port1, m1] = entries[i];
+                    const size1 = MOTOR_SIZES[portTypes[port1] as number];
+                    if (size1 === undefined) continue;
+                    for (let j = i + 1; j < entries.length; j++) {
+                        const [port2, m2] = entries[j];
+                        const size2 = MOTOR_SIZES[portTypes[port2] as number];
+                        if (size2 === undefined) continue;
+                        if (size1 === size2) {
+                            sameSizePairs.push({ m1, m2, size: size1 });
+                        }
+                    }
+                }
+                sameSizePairs.sort(sortBySizeDesc);
+                if (sameSizePairs.length) {
+                    motorpair = sameSizePairs[0];
+                }
             }
         }
 
@@ -321,4 +349,12 @@ function getHubTypeDescriptor(
             d.productId === productId &&
             (d.productVersion === undefined || d.productVersion === productVersion),
     );
+}
+
+function isMotor(puptype: number | string): boolean {
+    if (typeof puptype === 'number') {
+        return MOTOR_SIZES[puptype] !== undefined;
+    } else {
+        return puptype === 'Motor';
+    }
 }

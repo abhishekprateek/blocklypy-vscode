@@ -59,11 +59,26 @@ export const DEVICE_NAMES: Record<number, string> = {
     0: 'No device',
 
     // DCMotor devices
-    1: 'Powered Up Medium Motor',
+    1: 'Powered Up Medium Motor', // 45303 Powered Up Medium Motor (aka WeDo 2.0 motor)
     2: 'Powered Up Train Motor',
+
+    // Internal devices
+    3: 'Powered Up Hub turn',
+    4: 'Powered Up Hub power',
+    5: 'Powered Up Hub touch',
+    6: 'Powered Up Hub lmotor',
+    7: 'Powered Up Hub xmotor',
 
     // Light devices
     8: 'Powered Up Lights',
+
+    // Internal devices
+    9: 'Powered Up Light 1',
+    10: 'Powered Up Light 2',
+    11: 'Powered Up T-Point',
+    12: 'Powered Up Explod',
+    13: 'Powered Up 3-Part',
+    14: 'Powered Up Unknown UART',
 
     // Hub internal sensors
     20: 'Powered Up Hub battery voltage',
@@ -127,19 +142,50 @@ export const DEVICE_NAMES: Record<number, string> = {
     75: 'Technic Medium Angular Motor (gray)',
     76: 'Technic Large Angular Motor (gray)',
 
-    // Mario additional devices
-    85: 'Mario built-in unknown',
+    // NXT devices (retired)
+    77: 'NXT Touch Sensor',
+    78: 'NXT Light Sensor',
+    79: 'NXT Sound Sensor',
+    80: 'NXT Color Sensor',
+    81: 'NXT Ultrasonic Sensor',
+    82: 'NXT Temperature Sensor',
+    83: 'NXT Energy Meter',
 
-    // Technic Move hub devices
-    86: 'Technic Move hub built-in drive motor',
-    87: 'Technic Move hub built-in steering motor',
-    88: 'Technic Move hub built-in lights',
-    89: 'Technic Move hub built-in play VM',
+    // EV3 devices (retired)
+    84: 'EV3 Touch Sensor',
+    // PBDRV_LEGODEV_TYPE_ID_EV3_TOUCH_SENSOR = 84
+    // 85: 'Mario built-in unknown',
+    85: 'EV3 Large Motor',
+    // PBDRV_LEGODEV_TYPE_ID_EV3_LARGE_MOTOR = 85
+    // 86: 'Technic Move hub built-in drive motor',
+    86: 'EV3 Medium Motor',
+    // PBDRV_LEGODEV_TYPE_ID_EV3_MEDIUM_MOTOR = 86
 
-    // Additional hub features
-    92: 'Powered Up hub unknown',
-    93: 'Powered Up hub IMU orientation',
-    94: 'Powered Up hub unknown',
+    // 87: 'Technic Move hub built-in steering motor',
+    87: 'EV3 DC Motor',
+    // PBDRV_LEGODEV_TYPE_ID_EV3DEV_DC_MOTOR = 87
+    // 88: 'Technic Move hub built-in lights',
+    88: 'EV3 LEGO Sensor',
+    // PBDRV_LEGODEV_TYPE_ID_EV3DEV_LEGO_SENSOR = 88
+    // 89: 'Technic Move hub built-in play VM',
+    89: 'NXT LEGO Analog Sensor',
+    // PBDRV_LEGODEV_TYPE_ID_NXT_ANALOG = 89
+    90: 'NXT LEGO I2C Sensor',
+    // PBDRV_LEGODEV_TYPE_ID_NXT_I2C = 90
+    91: 'Custom I2C Sensor',
+    // PBDRV_LEGODEV_TYPE_ID_CUSTOM_I2C = 91
+    // 92: 'Powered Up hub unknown',
+    92: 'Custom UART Sensor',
+    // PBDRV_LEGODEV_TYPE_ID_CUSTOM_UART = 92
+
+    // 93: 'Powered Up hub IMU orientation',
+    93: 'Any Lump UART',
+    // PBDRV_LEGODEV_TYPE_ID_ANY_LUMP_UART = 93
+    // 94: 'Powered Up hub unknown',
+    94: 'Any DC Motor',
+    // PBDRV_LEGODEV_TYPE_ID_ANY_DC_MOTOR = 94
+    95: 'Powered Up hub unknown',
+    // PBDRV_LEGODEV_TYPE_ID_ANY_ENCODED_MOTOR = 95
 };
 
 /**
