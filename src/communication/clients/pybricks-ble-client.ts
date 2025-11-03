@@ -8,6 +8,10 @@ import { RefreshTree } from '../../extension/tree-commands';
 import { setState, StateProp } from '../../logic/state';
 import { AppDataInstrumentationPybricksProtocol } from '../../pybricks/appdata-instrumentation-protocol';
 import {
+    HubTypeDescriptors,
+    HubTypeDescriptorType,
+} from '../../pybricks/autodetect/const';
+import {
     decodePnpId,
     deviceInformationServiceUUID,
     firmwareRevisionStringUUID,
@@ -78,6 +82,7 @@ export class PybricksBleClient extends BaseClient {
     private _version: VersionInfo | undefined;
     private _incomingDataQueue: queueAsPromised<Buffer>;
     private _incomingAppDataQueue: queueAsPromised<Buffer>;
+    private _hubtype: HubTypeDescriptorType | undefined;
 
     public get descriptionKVP(): [string, string][] {
         const kvp: [string, string][] = [];
@@ -103,6 +108,10 @@ export class PybricksBleClient extends BaseClient {
 
     public get pnpId() {
         return this._version?.pnpId;
+    }
+
+    public get hubType() {
+        return this._hubtype;
     }
 
     public get connected() {
@@ -244,6 +253,14 @@ export class PybricksBleClient extends BaseClient {
             software: softwareRevision,
             pnpId,
         };
+
+        this._hubtype = HubTypeDescriptors.find((hub) => {
+            return (
+                hub.productId === pnpId.productId &&
+                (hub.productVersion === undefined ||
+                    hub.productVersion === pnpId.productVersion)
+            );
+        });
 
         this._exitStack.push(() => {
             this._rxtxCharacteristic?.removeAllListeners('data');
@@ -441,7 +458,7 @@ export class PybricksBleClient extends BaseClient {
     }
 
     public async sendCodeToRepl(code: string) {
-        const eol = '\r\n';
+        const eol = '\r'; // Pybricks REPL uses \r as EOL
         const lines = code.split(/\r?\n/);
         if (lines.length === 0) return;
         // assume in REPL mode already

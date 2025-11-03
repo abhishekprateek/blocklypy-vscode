@@ -9,6 +9,10 @@ export type HubTypeDescriptorType = {
     label: string;
     productId?: HubType;
     productVersion?: number;
+    capabilities: {
+        repl: boolean;
+        ports: number;
+    };
 };
 
 export const HubTypeDescriptors: HubTypeDescriptorType[] = [
@@ -17,33 +21,39 @@ export const HubTypeDescriptors: HubTypeDescriptorType[] = [
         label: 'SPIKE Essential Hub',
         productId: HubType.TechnicSmallHub,
         productVersion: TechnicSmallHubVariant.SpikeEssentialHub,
+        capabilities: { repl: true, ports: 2 },
     },
     {
         hubType: 'PrimeHub',
         label: 'SPIKE Prime Hub',
         productId: HubType.TechnicLargeHub,
         productVersion: TechnicLargeHubVariant.SpikePrimeHub,
+        capabilities: { repl: true, ports: 6 },
     },
     {
         hubType: 'InventorHub',
         label: 'MINDSTORMS Robot Inventor Hub',
         productId: HubType.TechnicLargeHub,
         productVersion: TechnicLargeHubVariant.MindstormsInventorHub,
+        capabilities: { repl: true, ports: 6 },
     },
     {
         hubType: 'CityHub',
         label: 'City Hub',
         productId: HubType.CityHub,
+        capabilities: { repl: true, ports: 2 },
     },
     {
         hubType: 'TechnicHub',
         label: 'Technic Hub',
         productId: HubType.TechnicHub,
+        capabilities: { repl: true, ports: 4 },
     },
     {
         hubType: 'MoveHub',
         label: 'Move Hub',
         productId: HubType.MoveHub,
+        capabilities: { repl: false, ports: 4 },
     },
 ];
 

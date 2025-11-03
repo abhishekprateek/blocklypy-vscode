@@ -135,47 +135,59 @@ function enhanceTemplate(
  * Show a quick pick to select a hub type and return the template with dynamic content
  */
 async function selectHubTemplate(filename: string): Promise<string | undefined> {
-    // Device auto detection
-    let { hubType, portTypes } = await autodetectPybricksHub();
+    const retval = await vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification,
+            title: 'Generating Pybricks template...',
+            cancellable: false,
+        },
+        async (_progress, _token) => {
+            // Device auto detection
+            let { hubType, portTypes } = await autodetectPybricksHub();
 
-    // Pick hubtype is not detected
-    if (!hubType) {
-        const items = HubTypeDescriptors.map((t) => ({
-            label: `$(circuit-board) ${t.label}`,
-            // description: t.label,
-            hubType: t.hubType,
-            hubTypeDescriptor: t,
-        }));
+            // Pick hubtype is not detected
+            if (!hubType) {
+                const items = HubTypeDescriptors.map((t) => ({
+                    label: `$(circuit-board) ${t.label}`,
+                    // description: t.label,
+                    hubType: t.hubType,
+                    hubTypeDescriptor: t,
+                }));
 
-        const selected = await vscode.window.showQuickPick(items, {
-            placeHolder: 'Select the hub type for your Pybricks program',
-            matchOnDescription: true,
-        });
+                const selected = await vscode.window.showQuickPick(items, {
+                    placeHolder: 'Select the hub type for your Pybricks program',
+                    matchOnDescription: true,
+                });
 
-        if (selected) {
-            hubType = selected.hubTypeDescriptor;
-        }
-    }
+                if (selected) {
+                    hubType = selected.hubTypeDescriptor;
+                }
+            }
 
-    // User cancelled
-    if (!hubType) {
-        return undefined;
-    }
+            // User cancelled
+            if (!hubType) {
+                return undefined;
+            }
 
-    // Add port code
-    const { code: autocode, longestInitLength } = generateDetectedPortCode(portTypes);
+            // Add port code
+            const { code: autocode, longestInitLength } =
+                generateDetectedPortCode(portTypes);
 
-    // Enhance template with dynamic content
-    const context = await getTemplateContext(filename, hubType);
-    let code = enhanceTemplate(
-        PYBRICKS_BASE_TEMPLATE,
-        hubType,
-        longestInitLength,
-        context,
+            // Enhance template with dynamic content
+            const context = await getTemplateContext(filename, hubType);
+            let code = enhanceTemplate(
+                PYBRICKS_BASE_TEMPLATE,
+                hubType,
+                longestInitLength,
+                context,
+            );
+            code += autocode;
+
+            return code;
+        },
     );
-    code += autocode;
 
-    return code;
+    return retval;
 }
 
 /**

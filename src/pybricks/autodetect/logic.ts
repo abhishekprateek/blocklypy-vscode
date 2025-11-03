@@ -9,14 +9,7 @@ import { PybricksBleClient } from '../../communication/clients/pybricks-ble-clie
 import { ConnectionManager } from '../../communication/connection-manager';
 import { loadPythonAssetModule } from '../../logic/compile';
 import { StateProp, waitForStateWithTimeout } from '../../logic/state';
-import { PnpId } from '../ble-device-info-service/protocol';
-import { HubType } from '../ble-lwp3-service/protocol';
-import {
-    DEVICE_NAMES,
-    HubTypeDescriptors,
-    HubTypeDescriptorType,
-    MOTOR_SIZES,
-} from './const';
+import { DEVICE_NAMES, HubTypeDescriptorType, MOTOR_SIZES } from './const';
 
 const AUTODETECT_PREFIX = 'AUTODETECT';
 const AUTODETECT_TIMEOUT_MS = 10 * 1000;
@@ -42,12 +35,10 @@ export async function autodetectPybricksHub(): Promise<{
     let portTypes: Record<string, number | string> = {};
 
     // Try to autodetect the hub type
-    const pnpId = client.pnpId;
-    hubType = getHubTypeDescriptor(pnpId);
+    hubType = client.hubType;
 
     try {
-        if (hubType?.productId === HubType.MoveHub)
-            throw new Error('MoveHub autodetection not supported');
+        if (!hubType?.capabilities.repl) throw new Error('Autodetection not supported');
 
         const { content } = await loadPythonAssetModule(AUTODETECT_SCRIPT_NAME);
         if (content) {
@@ -336,19 +327,6 @@ export function padInit(
     const paddingLength = Math.max(longestInitLength - varname.length - init.length, 0);
     const padding = ' '.repeat(paddingLength);
     return `${varname} = ${init}${padding} # ${comment}`;
-}
-
-function getHubTypeDescriptor(
-    pnpId: PnpId | undefined,
-): HubTypeDescriptorType | undefined {
-    if (!pnpId) return undefined;
-    const { productId, productVersion } = pnpId;
-
-    return HubTypeDescriptors.find(
-        (d) =>
-            d.productId === productId &&
-            (d.productVersion === undefined || d.productVersion === productVersion),
-    );
 }
 
 function isMotor(puptype: number | string): boolean {

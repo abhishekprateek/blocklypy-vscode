@@ -14,6 +14,7 @@ import {
     insertPybricksTemplate,
 } from '../commands/template-helpers';
 import { DeviceOSType, StartMode } from '../communication/clients/base-client';
+import { PybricksBleClient } from '../communication/clients/pybricks-ble-client';
 import { ConnectionManager } from '../communication/connection-manager';
 import { BLOCKLYPY_COMMANDS_VIEW_ID, EXTENSION_KEY } from '../const';
 import { loadPythonAssetModule } from '../logic/compile';
@@ -246,8 +247,15 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
         command: Commands.StartREPL,
         handler: async () => {
             const client = ConnectionManager.client;
-            if (client?.classDescriptor.os !== DeviceOSType.Pybricks)
+            if (
+                client?.classDescriptor.os !== DeviceOSType.Pybricks ||
+                !(client instanceof PybricksBleClient)
+            ) {
                 throw new Error('Connect a Pybricks device first.');
+            }
+            if (!client.hubType?.capabilities.repl) {
+                throw new Error('REPL is not supported by hub.');
+            }
 
             // Stop any running program
             if (hasState(StateProp.Running)) await client.action_stop();
@@ -259,7 +267,10 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
         command: Commands.StartHubMonitor,
         handler: async () => {
             const client = ConnectionManager.client;
-            if (client?.classDescriptor.os !== DeviceOSType.Pybricks) {
+            if (
+                client?.classDescriptor.os !== DeviceOSType.Pybricks ||
+                !(client instanceof PybricksBleClient)
+            ) {
                 throw new Error('Connect a Pybricks device first.');
             }
             if (
@@ -271,6 +282,9 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
                 throw new Error(
                     'Enable the Pybricks Application Interface and Device Notification plot feature flags to use Hub Monitor.',
                 );
+            }
+            if (!client.hubType?.capabilities.repl) {
+                throw new Error('REPL is not supported by hub.');
             }
 
             const { uri, content } = await loadPythonAssetModule('hubmonitor.min.py');
