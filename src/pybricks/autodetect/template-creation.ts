@@ -47,10 +47,11 @@ export async function selectHubTemplate(
         async (_progress, _token) => {
             // Device auto detection
 
-            const getcode = async (
+            // initial template
+            const updateCode = async (
                 hubType: HubTypeDescriptorType | undefined = undefined,
                 devices: Record<string, DeviceObjectType> = {},
-                inProgress: boolean = false,
+                inProgress: boolean = true,
             ) => {
                 const context = await getTemplateContext(filename, hubType);
                 let code = enhanceTemplate(PYBRICKS_BASE_TEMPLATE, context);
@@ -60,15 +61,15 @@ export async function selectHubTemplate(
                     inProgress,
                 );
                 code += autocode;
+
+                await onTemplateUpdated?.(code);
                 return code;
             };
-
-            // initial template
-            await onTemplateUpdated?.(await getcode(undefined, undefined, true));
+            await updateCode(undefined, undefined, true);
 
             // autodetect
-            let { hubType, devices } = await autodetectPybricksHub();
-            await onTemplateUpdated?.(await getcode(hubType, devices, true));
+            let { hubType, devices } = await autodetectPybricksHub(updateCode);
+            await updateCode(hubType, devices, true);
 
             // Pick hubtype is not detected
             if (!hubType) {
@@ -91,17 +92,16 @@ export async function selectHubTemplate(
 
             // User cancelled
             if (!hubType) {
-                await onTemplateUpdated?.('');
+                await onTemplateUpdated?.(''); // clear the template
                 return undefined;
             }
 
             // update code
-            await onTemplateUpdated?.(await getcode(hubType, devices, true));
+            await updateCode(hubType, devices, true);
 
             // Add port code
             await detectMotorPair(devices, hubType);
-            const code = await getcode(hubType, devices);
-            await onTemplateUpdated?.(code);
+            const code = await updateCode(hubType, devices, false);
 
             return code;
         },

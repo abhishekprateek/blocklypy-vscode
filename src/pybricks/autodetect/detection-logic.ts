@@ -30,7 +30,13 @@ export type DeviceObjectType = {
     isMotor?: boolean;
 };
 
-export async function autodetectPybricksHub(): Promise<{
+export async function autodetectPybricksHub(
+    updateCodeCb: (
+        hubType: HubTypeDescriptorType | undefined,
+        devices: Record<string, DeviceObjectType>,
+        inProgress: boolean,
+    ) => Promise<string>,
+): Promise<{
     hubType: HubTypeDescriptorType | undefined;
     devices: Record<string, DeviceObjectType>;
 }> {
@@ -52,6 +58,7 @@ export async function autodetectPybricksHub(): Promise<{
 
     // Try to autodetect the hub type
     hubType = client.hubType;
+    await updateCodeCb(hubType, devices, true);
 
     try {
         if (!hubType?.capabilities.repl) throw new Error('Autodetection not supported');
