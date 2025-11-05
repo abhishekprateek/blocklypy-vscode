@@ -221,7 +221,7 @@ export function registerCommandsTree(context: vscode.ExtensionContext) {
     // vscode.window.registerTreeDataProvider(EXTENSION_KEY + '-commands', TreeCommands);
     TreeDP.init(context);
 
-    const treeview = vscode.window.createTreeView(EXTENSION_KEY + '-commands', {
+    const treeview = vscode.window.createTreeView(EXTENSION_KEY + '-commands-tree', {
         treeDataProvider: TreeDP,
     });
     context.subscriptions.push(treeview);

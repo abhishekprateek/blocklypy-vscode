@@ -313,9 +313,10 @@
       ],
       "blocklypy-vscode-commands": [
         {
-          "id": "blocklypy-vscode-commands",
+          "id": "blocklypy-vscode-commands-tree",
           "name": "",
-          "icon": "asset/icons/icon.svg"
+          "icon": "asset/icons/icon.svg",
+          "type": "tree"
         }
       ]
     },

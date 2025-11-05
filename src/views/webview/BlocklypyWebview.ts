@@ -13,7 +13,6 @@ import svgPanZoom from 'svg-pan-zoom';
 
 // const vscode = acquireVsCodeApi();
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 let monacoInstance: monacoType.editor.IStandaloneCodeEditor | undefined = undefined;
 
 const ViewType = {
@@ -37,7 +36,6 @@ function waitForMonaco(callback: () => void) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     waitForMonaco(() => {
         monacoInstance = monaco.editor.create(document.getElementById('editor')!, {
             language: 'python',
@@ -77,7 +75,6 @@ window.addEventListener('message', (event) => {
                 lineLen,
             );
             monacoInstance.revealLineInCenter(line1); // Monaco is 1-based
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             // monacoInstance.setSelection(selection);
 
             // Create or update diagnostics decorations

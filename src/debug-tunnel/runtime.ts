@@ -290,17 +290,15 @@ export class PybricksTunnelDebugRuntime extends EventEmitter {
             if (this.resumeMode === 'continue') {
                 const bps = this.breakPoints.get(this._sourceFile) || [];
                 const matched = bps.filter((bp) => bp.line === this.currentLine);
-                // if (matched.length > 0) {
-                //     // ensure breakpoint is verified and notify
-                //     if (!matched[0].verified) {
-                //         matched[0].verified = true;
-                //         this.sendEvent('breakpointValidated', matched[0]);
-                //     }
-                //     this.sendEvent('stopOnBreakpoint');
-                // } else {
-                //     // no dedicated breakpoint -> ignore trap during continue, step to next trap
-                //     void DebugTunnel.performContinueAfterTrap(true);
-                // }
+                if (matched.length > 0) {
+                    // ensure breakpoint is verified and notify
+                    if (!matched[0].verified) {
+                        matched[0].verified = true;
+                        this.sendEvent('breakpointValidated', matched[0]);
+                    }
+                    this.sendEvent('stopOnBreakpoint');
+                }
+                
                 if (this.canStopOnLocation(this._sourceFile, this.currentLine)) {
                     this.sendEvent('stopOnBreakpoint');
                 } else {

@@ -67,6 +67,20 @@ const extensionConfig = {
                     from: path.resolve(__dirname, 'src/assets'),
                     to: path.resolve(__dirname, 'dist/assets'),
                 },
+                {
+                    from: path.resolve(
+                        __dirname,
+                        'node_modules/monaco-editor/esm/vs/base/browser/ui/codicons/codicon/codicon.css',
+                    ),
+                    to: path.resolve(__dirname, 'dist/codicons'),
+                },
+                {
+                    from: path.resolve(
+                        __dirname,
+                        'node_modules/monaco-editor/esm/vs/base/browser/ui/codicons/codicon/codicon.ttf',
+                    ),
+                    to: path.resolve(__dirname, 'dist/codicons'),
+                },
             ],
         }),
     ],
