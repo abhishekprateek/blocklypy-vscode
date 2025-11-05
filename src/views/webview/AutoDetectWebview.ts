@@ -113,8 +113,9 @@ function updateDisplay(type: 'wheel' | 'axle') {
     const parsed = parseSizeInput(input.value);
 
     if (parsed) {
+        const label = type === 'wheel' ? 'Wheel Diameter' : 'Axle Track';
         const studs = (parsed.value / 8).toFixed(1);
-        display.innerHTML = `<span class="codicon codicon-info"></span>${parsed.value} mm / ${studs} studs`;
+        display.innerHTML = `<span class="codicon codicon-info"></span>${label} will be set to ${parsed.value} mm / ${studs} studs`;
         display.className = 'validation-message valid';
         input.classList.remove('invalid');
         submitButton.disabled = false;

@@ -183,20 +183,6 @@ export class AutodetectPanel {
                         margin: 0 auto;
                     }
 
-                    .header {
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 16px;
-                        padding-bottom: 12px;
-                        border-bottom: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
-                    }
-
-                    .header-icon {
-                        font-size: 20px;
-                        margin-right: 10px;
-                        opacity: 0.9;
-                    }
-
                     .header-subtitle {
                         font-size: 12px;
                         color: var(--vscode-descriptionForeground);
@@ -281,10 +267,10 @@ export class AutodetectPanel {
                     }
 
                     .hint {
-                        font-size: 11px;
+                        font-size: 10px;
                         color: var(--vscode-descriptionForeground);
                         margin-top: 3px;
-                        opacity: 0.8;
+                        opacity: 0.6;
                     }
 
                     .actions {
@@ -425,11 +411,7 @@ export class AutodetectPanel {
 
                     <div class="form-section">
                         <div class="form-row">
-                            <label for="wheel-diameter">Wheel Diameter</label>
-
-                            <div class="header-subtitle" id="port-title">
-                                <div>Configure your robot dimensions:</div>
-                            </div>
+                            <label for="wheel-diameter">Wheel Diameter <small class="hint">in mm, cm, or studs</small></label>
 
                             <div class="input-container">
                                 <input 
@@ -441,22 +423,20 @@ export class AutodetectPanel {
                                 />
                             </div>
                             <div id="wheel-diameter-display" class="validation-message"></div>
-                            <div class="hint">Enter size in mm, cm, or studs (e.g., 56, 56mm, 7s)</div>
                         </div>
 
                         <div class="form-row">
-                            <label for="axle-track">Axle Track</label>
+                            <label for="axle-track">Distance between Wheels / Axle Track <small class="hint">in mm, cm, or studs</small></label>
                             <div class="input-container">
                                 <input 
                                     type="text" 
                                     id="axle-track" 
-                                    placeholder="Enter distance between wheel centters of your robot"
+                                    placeholder="Enter distance between wheel centers of your robot"
                                     autocomplete="off"
                                     spellcheck="false"
                                 />
                             </div>
                             <div id="axle-track-display" class="validation-message"></div>
-                            <div class="hint">Distance between wheel centers (e.g., 104, 104mm, 13s)</div>
                         </div>
                     </div>
 
