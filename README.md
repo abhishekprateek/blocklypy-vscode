@@ -268,3 +268,5 @@ This project is licensed under the [MIT License](LICENSE).
 ![Screenshot: View](./screenshots/view-4.png)
 
 ![Screenshot: View](./screenshots/view-2.png)
+
+![Screenshot: Autodetect](./screenshots/autodetect-template.png)

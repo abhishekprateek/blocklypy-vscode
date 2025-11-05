@@ -2,6 +2,12 @@
 
 All significant updates to the "blocklypy" extension are tracked in this file.
 
+## [0.7.19] - 2025-11-05
+
+## Added
+
+- Added auto-detection of LEGO hubs and connected devices, including DriveBase detection
+
 ## [0.7.16] - 2025-11-02
 
 ## Added

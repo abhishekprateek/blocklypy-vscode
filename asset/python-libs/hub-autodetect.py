@@ -9,12 +9,8 @@ from pybricks.hubs import ThisHub
 from pybricks.iodevices import PUPDevice
 from pybricks.parameters import Port
 detect = []; hub = ThisHub
-for pc in 'ABCDEF':
-  try:
-    # MoveHub fails on getting the attribute, while PrimeHub does not
-    # port = getattr(Port,pc,None)
-    port = eval("Port."+pc)
-    try: detect.append([pc,PUPDevice(port).info()['id']])
-    except: detect.append([pc,0])
-  except: pass
+for pc in dir(Port):
+  try: port = getattr(Port,pc); detect.append([pc,PUPDevice(port).info()['id']])
+  except: detect.append([pc,0])
+  
 print("AUTODETECT", detect)

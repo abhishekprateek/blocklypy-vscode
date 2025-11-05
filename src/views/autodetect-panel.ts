@@ -414,12 +414,6 @@ export class AutodetectPanel {
                             </div>
 
                             <table id="devices">
-                                <thead>
-                                    <tr>
-                                        <th>Port</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
                                 <tbody id="devices-tbody"></tbody>
                             </table>
                         </div>
