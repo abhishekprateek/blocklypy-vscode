@@ -94,11 +94,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }),
     );
 
-    // Finally, initialize the connection manager and auto-connect if needed
-    const layerTypes: (typeof BaseLayer)[] = [BLELayer, USBLayer];
-    if (isDevelopmentMode) layerTypes.push(MockLayer);
-    void ConnectionManager.initialize(layerTypes).catch(console.error);
-
     // Register notebook controller for executing .ipynb cells on the device
     registerMicroPythonNotebookController(context);
 
@@ -108,6 +103,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         undefined,
         true,
     );
+
+    setTimeout(() => {
+        void deferredActivations();
+    }, 100);
+}
+
+async function deferredActivations(): Promise<void> {
+    // Place any activations that can be deferred here
+
+    // Finally, initialize the connection manager and auto-connect if needed
+    const layerTypes: (typeof BaseLayer)[] = [BLELayer, USBLayer];
+    if (isDevelopmentMode) layerTypes.push(MockLayer);
+    await ConnectionManager.initialize(layerTypes).catch(console.error);
 }
 
 export async function deactivate(): Promise<void> {
