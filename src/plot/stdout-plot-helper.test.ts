@@ -39,7 +39,7 @@ let disposables: { dispose: () => void }[] = [];
 let plotManager: PlotManager | undefined;
 beforeEach(() => {
     jest.useFakeTimers();
-    plotManager = new PlotManager();
+    plotManager = PlotManager.create();
     disposables.push(plotManager.onPlotStarted.event(onPlotStartedMock));
     disposables.push(plotManager.onPlotData.event(onPlotDataMock));
 });
