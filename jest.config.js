@@ -1,20 +1,9 @@
 /** @type {import("jest").Config} **/
 module.exports = {
     testEnvironment: 'node',
-    extensionsToTreatAsEsm: ['.ts'],
-    preset: 'ts-jest/presets/default-esm',
-    transform: {
-        '^.+\\.ts$': [
-            'ts-jest',
-            { tsconfig: '<rootDir>/tsconfig.jest.json', useESM: true },
-        ],
-    },
     preset: 'ts-jest',
     transform: {
-        '^.+\\.ts$': [
-            'ts-jest',
-            { tsconfig: '<rootDir>/tsconfig.jest.json', useESM: false },
-        ],
+        '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }],
     },
     testPathIgnorePatterns: ['/temp/'],
     transformIgnorePatterns: [

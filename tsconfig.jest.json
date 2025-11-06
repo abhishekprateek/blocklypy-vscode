@@ -3,6 +3,8 @@
     "compilerOptions": {
         "module": "NodeNext",
         "isolatedModules": true,
-        "esModuleInterop": true
-    }
+        "esModuleInterop": true,
+        "types": ["jest", "node", "vscode"]
+    },
+    "exclude": ["node_modules/@types/mocha"]
 }
