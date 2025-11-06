@@ -5,11 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const typeCheckedConfig =
-    typescriptEslint.configs['recommended-type-checked'] ||
-    typescriptEslint.configs['recommendedTypeChecked'] ||
-    typescriptEslint.configs['recommended-requiring-type-checking'] ||
-    typescriptEslint.configs.recommended;
+const typeCheckedConfig = typescriptEslint.configs['recommended-type-checked'];
 
 export default [
     {
