@@ -20,7 +20,13 @@ import { HubOSBleClient } from '../clients/hubos-ble-client';
 import { PybricksBleClient } from '../clients/pybricks-ble-client';
 import { ConnectionManager } from '../connection-manager';
 import { UUIDu } from '../utils';
-import { BaseLayer, DeviceChangeEvent, LayerDescriptor, LayerKind } from './base-layer';
+import {
+    BaseLayer,
+    ConnectionStateChangeEvent,
+    DeviceChangeEvent,
+    LayerDescriptor,
+    LayerKind,
+} from './base-layer';
 
 const ADVERTISEMENT_POLL_INTERVAL_MS = 1 * MILLISECONDS_IN_SECOND; // 1 second
 const BLE_DEVICE_VISIBILITY_SEC_DEFAULT = 10; // seconds
@@ -68,6 +74,12 @@ export class BLELayer extends BaseLayer {
     private _advertisementHandle: NodeJS.Timeout | undefined = undefined;
     private _noble: Noble | undefined = undefined;
 
+    // Store references to the bound functions to allow proper removal later
+    private _handleNobleStateChangeBound: (state: string) => void;
+    private _handleScanStartBound: () => void;
+    private _handleScanStopBound: () => void;
+    private _handleDiscoverBound: (peripheral: Peripheral) => void;
+
     public override supportsDevtype(_devtype: string) {
         return (
             PybricksBleClient.deviceType === _devtype ||
@@ -75,20 +87,15 @@ export class BLELayer extends BaseLayer {
         );
     }
 
-    public override async initialize() {
-        // throw new Error('Noble import not supported');
-        const nobleModule = await import('@stoprocent/noble');
-        this._noble = nobleModule?.withBindings('default'); // 'hci', 'win', 'mac'
-        if (!this._noble) throw new Error('Noble module not loaded');
+    public constructor(
+        onStateChange?: (event: ConnectionStateChangeEvent) => void,
+        onDeviceChange?: (event: DeviceChangeEvent) => void,
+    ) {
+        super(onStateChange, onDeviceChange);
 
-        this.state = ConnectionState.Disconnected; // initialized successfully
-
-        // setup noble listeners
-        this._noble.on(
-            'stateChange',
-            (state) => void this.handleNobleStateChange(state),
-        );
-        this._noble.on('scanStart', () => {
+        this._handleNobleStateChangeBound = (state: string) =>
+            void this.handleNobleStateChange(state);
+        this._handleScanStartBound = () => {
             this._isScanning = true;
             if (this._scanRequested) {
                 this._scanRequested = false;
@@ -98,13 +105,13 @@ export class BLELayer extends BaseLayer {
                 () => this.processAdvertisementQueue(),
                 ADVERTISEMENT_POLL_INTERVAL_MS,
             );
-        });
-        this._noble.on('scanStop', () => {
+        };
+        this._handleScanStopBound = () => {
             this._isScanning = false;
             clearInterval(this._advertisementHandle);
             this._advertisementHandle = undefined;
-        });
-        this._noble.on('discover', (peripheral) => {
+        };
+        this._handleDiscoverBound = (peripheral: Peripheral) => {
             if (!peripheral.advertisement.localName) return;
 
             const advertisement = _.cloneDeep(peripheral.advertisement);
@@ -142,7 +149,43 @@ export class BLELayer extends BaseLayer {
                 devtype,
                 advertisement,
             });
-        });
+        };
+    }
+
+    public override async initialize() {
+        await super.initialize();
+
+        // throw new Error('Noble import not supported');
+        const nobleModule = await import('@stoprocent/noble');
+        this._noble = nobleModule?.withBindings('default'); // 'hci', 'win', 'mac'
+        if (!this._noble) throw new Error('Noble module not loaded');
+
+        this.state = ConnectionState.Disconnected; // initialized successfully
+
+        this._noble.on('stateChange', this._handleNobleStateChangeBound);
+        this._noble.on('scanStart', this._handleScanStartBound);
+        this._noble.on('scanStop', this._handleScanStopBound);
+        this._noble.on('discover', this._handleDiscoverBound);
+    }
+
+    public override async finalize(): Promise<void> {
+        this.stopScanning();
+
+        // Remove noble listeners
+        if (this._noble) {
+            this._noble.removeListener(
+                'stateChange',
+                this._handleNobleStateChangeBound,
+            );
+            this._noble.removeListener('scanStart', this._handleScanStartBound);
+            this._noble.removeListener('scanStop', this._handleScanStopBound);
+            this._noble.removeListener('discover', this._handleDiscoverBound);
+        }
+        clearInterval(this._advertisementHandle);
+        this._advertisementHandle = undefined;
+
+        await super.finalize();
+        this._noble = undefined; // Clear noble reference
     }
 
     private processAdvertisementQueue() {

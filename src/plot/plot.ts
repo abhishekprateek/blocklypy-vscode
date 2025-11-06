@@ -12,7 +12,7 @@ type PlotStartEvent = { columns: string[]; rows: number[][] | undefined };
 type PlotDataEvent = number[];
 // type PlotBarUpdateEvent = number[];
 
-export class PlotManager {
+export class PlotManager implements vscode.Disposable {
     private _initialized = false;
     private _startTime: number = 0;
     private _columns: string[] | undefined = undefined;
@@ -24,38 +24,51 @@ export class PlotManager {
 
     public readonly onPlotStarted = new EventEmitter<PlotStartEvent>();
     public readonly onPlotData = new EventEmitter<PlotDataEvent>();
+    private readonly _disposables: vscode.Disposable[] = [];
 
-    public static create(): PlotManager {
-        const pm = new PlotManager();
-        pm.onPlotStarted.event(() => {
+    private constructor() {
+        this._disposables.push(this.onPlotStarted);
+        this._disposables.push(this.onPlotData);
+
+        this.onPlotStarted.event(() => {
             // write header to file
             // todo; check if already open, do sg to "resize"
         });
         let lineCountForFlush = 0;
-        pm.onPlotData.event((row) => {
+        this.onPlotData.event((row) => {
             // write to file
-            if (pm._datastream) {
-                pm._datastream.write(
+            if (this._datastream) {
+                this._datastream.write(
                     row
                         .map((v) =>
                             typeof v === 'number' && !isNaN(v) ? v.toString() : '',
                         )
                         .join(',') + '\n',
                 );
-                if (++lineCountForFlush % 50 === 0) pm._datastream.uncork();
+                if (++lineCountForFlush % 50 === 0) this._datastream.uncork();
             }
         });
 
-        pm.onPlotStarted.event(({ columns, rows }) => {
+        this.onPlotStarted.event(({ columns, rows }) => {
             // send to webview
             DatalogView.Instance?.setHeaders(columns, rows).catch(console.error);
         });
-        pm.onPlotData.event((row) => {
+        this.onPlotData.event((row) => {
             // send to webview
             DatalogView.Instance?.addData(row).catch(console.error);
         });
+    }
 
-        return pm;
+    public static create(): PlotManager {
+        return new PlotManager();
+    }
+
+    public dispose() {
+        this.close().catch(console.error);
+        for (const disposable of this._disposables) {
+            disposable.dispose();
+        }
+        this._disposables.length = 0; // Clear the array after disposing all elements
     }
 
     private get delta(): number {

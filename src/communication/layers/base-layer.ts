@@ -44,6 +44,7 @@ export class BaseLayer {
     private _state: ConnectionState = ConnectionState.Initializing;
     protected _allDevices = new Map<string, DeviceMetadata>();
     protected _exitStack: (() => Promise<void> | void)[] = [];
+    protected _disposables: vscode.Disposable[] = []; // Add _disposables array
     protected _stateChange = new vscode.EventEmitter<ConnectionStateChangeEvent>();
     protected _deviceChange = new vscode.EventEmitter<DeviceChangeEvent>();
 
@@ -55,8 +56,10 @@ export class BaseLayer {
         onStateChange?: (event: ConnectionStateChangeEvent) => void,
         onDeviceChange?: (event: DeviceChangeEvent) => void,
     ) {
-        if (onStateChange) this._stateChange.event(onStateChange);
-        if (onDeviceChange) this._deviceChange.event(onDeviceChange);
+        if (onStateChange)
+            this._disposables.push(this._stateChange.event(onStateChange));
+        if (onDeviceChange)
+            this._disposables.push(this._deviceChange.event(onDeviceChange));
     }
 
     public get descriptor() {
@@ -85,8 +88,9 @@ export class BaseLayer {
         return false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     public async initialize(): Promise<void> {
-        // NOOP
+        this._disposables.push(this._deviceChange, this._stateChange);
     }
 
     public async finalize(): Promise<void> {
@@ -96,8 +100,11 @@ export class BaseLayer {
         await this.runExitStack();
 
         this._allDevices.clear();
-        this._deviceChange.dispose();
-        this._stateChange.dispose();
+        // Dispose of any event listeners registered by this instance
+        for (const disposable of this._disposables) {
+            disposable.dispose();
+        }
+        this._disposables.length = 0; // Clear the array
     }
 
     public supportsDevtype(_devtype: string) {
@@ -199,7 +206,7 @@ export class BaseLayer {
         throw new Error('Not implemented');
     }
 
-    private async runExitStack() {
+    protected async runExitStack() {
         for (const fn of this._exitStack) {
             try {
                 await fn();

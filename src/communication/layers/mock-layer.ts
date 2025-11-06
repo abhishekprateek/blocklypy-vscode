@@ -29,6 +29,8 @@ export class MockLayer extends BaseLayer {
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public override async initialize() {
+        await super.initialize();
+        
         this.state = ConnectionState.Disconnected; // initialized successfully
     }
 

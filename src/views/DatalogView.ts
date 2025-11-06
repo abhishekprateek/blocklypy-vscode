@@ -11,12 +11,13 @@ const DATALOG_PANEL_ID = EXTENSION_KEY + '-datalogview';
 const DATALOG_VIEW_ID = EXTENSION_KEY + '-datalogview';
 const DATALOG_WEBVIEW_NAME = 'DatalogWebview';
 
-export class DatalogView implements vscode.WebviewViewProvider {
+export class DatalogView implements vscode.WebviewViewProvider, vscode.Disposable {
     public static readonly viewType = DATALOG_VIEW_ID;
     private static _instance: DatalogView | undefined;
 
     private readonly context: vscode.ExtensionContext;
     private currentWebviewView: vscode.WebviewView | undefined;
+    private _disposables: vscode.Disposable[] = [];
 
     private constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -37,7 +38,21 @@ export class DatalogView implements vscode.WebviewViewProvider {
             { webviewOptions: { retainContextWhenHidden: true } },
         );
         context.subscriptions.push(reg);
+        // Add this to the extension's disposables to ensure `dispose` is called
+        context.subscriptions.push(provider);
         return provider;
+    }
+
+    public dispose() {
+        // Clear reference to the current webview if it exists. Its lifecycle is managed by VS Code.
+        this.currentWebviewView = undefined;
+        // Dispose of any other disposables held by this instance
+        // Iterate through disposables and dispose them, then clear the array.
+        for (const disposable of this._disposables) {
+            disposable.dispose();
+        }
+        this._disposables.length = 0; // Clear the array after disposing all elements
+        DatalogView._instance = undefined; // Clear the static instance
     }
 
     public resolveWebviewView(
@@ -47,17 +62,17 @@ export class DatalogView implements vscode.WebviewViewProvider {
     ): void {
         this.currentWebviewView = webviewView;
 
+        this._disposables.push(
+            webviewView.onDidDispose(() => {
+                this.currentWebviewView = undefined; // Clear reference to disposed webview
+            }),
+        );
+
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [
                 vscode.Uri.joinPath(this.context.extensionUri, 'dist'),
                 vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview'),
-                vscode.Uri.joinPath(
-                    this.context.extensionUri,
-                    'node_modules',
-                    'uplot',
-                    'dist',
-                ),
             ],
         };
 

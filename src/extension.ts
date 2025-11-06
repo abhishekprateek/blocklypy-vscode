@@ -19,6 +19,7 @@ import { wrapErrorHandling } from './extension/utils';
 import { checkMagicHeaderComment } from './logic/compile';
 import { hasState, StateProp } from './logic/state';
 import { registerMicroPythonNotebookController } from './notebook/blocklypy-micropython-kernel';
+import { plotManager } from './plot/plot';
 import { BlocklypyViewerProvider } from './views/BlocklypyViewerProvider';
 import { DatalogView } from './views/DatalogView';
 import { PythonPreviewProvider } from './views/PythonPreviewProvider';
@@ -115,6 +116,7 @@ export async function deactivate(): Promise<void> {
         await wrapErrorHandling(stopUserProgramAsync)();
         await wrapErrorHandling(disconnectDeviceAsync)();
         ConnectionManager.finalize();
+        plotManager.dispose();
     } catch (err) {
         console.error('Error during deactivation:', err);
     }
