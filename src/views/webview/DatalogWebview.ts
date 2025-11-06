@@ -24,6 +24,8 @@ let chartMode = 'lines'; // or 'bar'
 
 // const vscode = acquireVsCodeApi();
 
+import { sanitizeHtml } from './webviewUtils';
+
 type DatalogWebviewMessage =
     | { command: 'setHeaders'; cols: string[]; rows?: number[][]; latest?: number[] }
     | { command: 'addData'; row: number[]; latest: number[] };
@@ -124,7 +126,7 @@ function setHeaders(
                 labelSize: 12,
             },
             ...dataSeriesNames.map((name, idx) => ({
-                label: name,
+                label: sanitizeHtml(name),
                 scale: `num${idx}`,
                 side: Axis.Side.Left,
                 stroke: COLORS[idx % COLORS.length],
@@ -148,14 +150,14 @@ function setHeaders(
                 // x-axis
                 {
                     scale: 'x',
-                    label: names[0],
+                    label: sanitizeHtml(names[0]),
                     width: 2,
                     stroke: '#7774',
                 },
                 // y-axes
                 ...dataSeriesNames.map((name, idx) => ({
                     scale: `num${idx}`,
-                    label: name,
+                    label: sanitizeHtml(name),
                     width: 2,
                     stroke: COLORS[idx % COLORS.length],
                     fill: COLORS[idx % COLORS.length] + '22',

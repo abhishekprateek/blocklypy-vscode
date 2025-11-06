@@ -12,6 +12,8 @@ interface RobotSizingMessage {
     devices?: Array<{ port: string; description: string }>;
 }
 
+import { sanitizeHtml } from './webviewUtils';
+
 interface RobotSizingResponse {
     command: 'submit' | 'cancel';
     wheelDiameter?: number;
@@ -57,15 +59,15 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('message', (event: MessageEvent) => {
     const data = event.data as RobotSizingMessage;
     if (data.command === 'initialize') {
-        wheelDiameterInput.value = data.wheelDiameter.toString();
-        axleTrackInput.value = data.axleTrack.toString();
+        wheelDiameterInput.value = data.wheelDiameter.toString() + ' mm';
+        axleTrackInput.value = data.axleTrack.toString() + ' mm';
         updateDisplay('wheel');
         updateDisplay('axle');
 
         // Update Hub Type
         const hubTypeElement = document.getElementById('hub-type');
         if (hubTypeElement) {
-            hubTypeElement.textContent = data.hubType;
+            hubTypeElement.textContent = sanitizeHtml(data.hubType);
         }
 
         // Update Devices
@@ -75,8 +77,8 @@ window.addEventListener('message', (event: MessageEvent) => {
                 .map(
                     (device) =>
                         `<tr>
-                            <td>Port.${device.port}</td>
-                            <td>${device.description}${
+                            <td>Port.${sanitizeHtml(device.port)}</td>
+                            <td>${sanitizeHtml(device.description)}${
                             data.wheelPorts?.includes(device.port)
                                 ? ' <strong>(robot wheel)</strong>'
                                 : ''

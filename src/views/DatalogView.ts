@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { EXTENSION_KEY } from '../const';
 import { setContextPlotDataAvailability } from '../extension/context-utils';
 import { plotManager } from '../plot/plot';
-import { getScriptUri } from './utils';
+import { getNonce, getScriptUri } from './utils';
 
 const DATALOG_PANEL_ID = EXTENSION_KEY + '-datalogview';
 const DATALOG_VIEW_ID = EXTENSION_KEY + '-datalogview';
@@ -51,18 +51,19 @@ export class DatalogView implements vscode.WebviewViewProvider {
             enableScripts: true,
             localResourceRoots: [
                 vscode.Uri.joinPath(this.context.extensionUri, 'dist'),
-                // vscode.Uri.joinPath(
-                //     this.context.extensionUri,
-                //     'node_modules',
-                //     'uplot',
-                //     'dist',
-                // ),
+                vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview'),
+                vscode.Uri.joinPath(
+                    this.context.extensionUri,
+                    'node_modules',
+                    'uplot',
+                    'dist',
+                ),
             ],
         };
 
         // get classname from DatalogView
         const scriptUri = getScriptUri(this.context, webviewView, DATALOG_WEBVIEW_NAME);
-        webviewView.webview.html = this.getHtmlForWebview(scriptUri);
+        webviewView.webview.html = this.getHtmlForWebview(scriptUri, webviewView);
 
         // Initialize the from the webview with the last header data
         setTimeout(() => {
@@ -91,15 +92,23 @@ export class DatalogView implements vscode.WebviewViewProvider {
         });
     }
 
-    private getHtmlForWebview(scriptSrc: vscode.Uri): string {
+    private getHtmlForWebview(
+        scriptSrc: vscode.Uri,
+        webviewView: vscode.WebviewView,
+    ): string {
+        // Generate a cryptographically secure nonce for CSP
+        const nonce = getNonce();
+
+        // uPlot seems to generate styles dynamically, so we need to allow 'unsafe-inline' here
         return /* html */ `
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8" />
                 <meta http-equiv="Content-Security-Policy"
-                        content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval';"/>
-                <style>
+                        content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src * 'unsafe-inline' 'nonce-${nonce}' 'unsafe-eval'; 
+                        img-src ${webviewView.webview.cspSource} data:;"/>
+                <style nonce="${nonce}">
                     html, body, #chart-container, #welcome-view {
                         height: 100%;
                         width: 100%;
@@ -138,7 +147,7 @@ export class DatalogView implements vscode.WebviewViewProvider {
                     
                 </div>
                 <div id="chart-container"></div>
-                <script src="${scriptSrc.toString()}"></script>
+                <script nonce="${nonce}" src="${scriptSrc.toString()}"></script>
             </body>
             </html>
         `;

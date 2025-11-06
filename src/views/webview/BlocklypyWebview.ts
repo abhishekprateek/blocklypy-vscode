@@ -3,13 +3,13 @@
  * It is compiled separately from the main extension code.
  */
 
-
 // import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import type * as monacoType from 'monaco-editor';
 // import 'monaco-editor/esm/vs/basic-languages/less/less';
 // import 'monaco-editor/esm/vs/basic-languages/python/python';
 // import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import svgPanZoom from 'svg-pan-zoom';
+import { sanitizeHtml } from './webviewUtils';
 
 // const vscode = acquireVsCodeApi();
 
@@ -153,7 +153,12 @@ function showView(view: string, content: string) {
         if (element) {
             // if content is svg do this, if it is base64 image do that
             // Detect if content is SVG or base64 image
-            if (typeof content === 'string' && content.trim().startsWith('<svg')) {
+            if (
+                typeof content === 'string' &&
+                (content.trim().startsWith('<svg') ||
+                    content.trim().startsWith('<?xml'))
+            ) {
+                // no sanitization here, as it will break the svg
                 element.innerHTML = content ?? '';
                 requestAnimationFrame(() => {
                     getPanZoom(false, element); // clear cache and re-init
@@ -163,9 +168,10 @@ function showView(view: string, content: string) {
                 typeof content === 'string' &&
                 content.trim().startsWith('data:image')
             ) {
+                // no sanitization here, as it will break the svg
                 element.innerHTML = `<img src="${content}" style="max-width:100%;max-height:100%;" />`;
             } else {
-                element.innerHTML = content ?? '';
+                element.innerHTML = sanitizeHtml(content ?? '');
             }
         }
     } else if (view === 'loading') {

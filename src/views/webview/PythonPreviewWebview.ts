@@ -30,6 +30,7 @@ function setContent(data: string) {
         svg.remove();
     }
     if (element) {
+        // intentionally not sanitizing SVG content to avoid breaking it
         element.innerHTML = data ?? '';
     }
 

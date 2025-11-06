@@ -10,7 +10,7 @@ import {
     CustomEditorProviderBase,
     DocumentState,
 } from './helpers/CustomEditorProviderBase';
-import { getScriptUri } from './utils';
+import { getNonce, getScriptUri } from './utils';
 
 const BLOCKLYPYVIEW_VIEW_ID = EXTENSION_KEY + '-blocklypyViewer';
 const BLOCKLYPY_WEBVIEW_NAME = 'BlocklypyWebview';
@@ -314,6 +314,8 @@ export class BlocklypyViewerProvider
         const state = this.documents.get(this.activeUri);
         if (!state) throw new Error('No active document state');
 
+        const nonce = getNonce();
+
         const scriptUri = getScriptUri(
             this.context,
             webviewPanel,
@@ -334,7 +336,12 @@ export class BlocklypyViewerProvider
             vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'monaco.worker.js'),
         ); // const languageWorkerUris = ['python', 'less'].map((lang) => [
         const monacoVendorUri = webviewPanel.webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'monaco-vendor.js'),
+            vscode.Uri.joinPath(
+                this.context.extensionUri,
+                'dist',
+                'webview',
+                'monaco-vendor.js',
+            ),
         ); //     lang,
         //     this.currentPanel?.webview.asWebviewUri(
         //         vscode.Uri.joinPath(
@@ -349,6 +356,11 @@ export class BlocklypyViewerProvider
             <html lang="en">
             <head>
             <meta charset="UTF-8">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
+                webviewPanel.webview.cspSource
+            } blob: data:; script-src 'nonce-${nonce}'; style-src ${
+            webviewPanel.webview.cspSource
+        } 'unsafe-inline';">
             <link rel="preload" href="${String(imageUri)}" as="image">
             <style>
             html, body, #container, #editor {
@@ -407,7 +419,7 @@ export class BlocklypyViewerProvider
                 <div id="graph" style="display:none"></div>
             </div>
 
-            <script>
+            <script nonce="${nonce}">
             (function(){
                 const vscode = acquireVsCodeApi();
                 vscode.postMessage({ command: 'webviewReady' });
@@ -419,10 +431,10 @@ export class BlocklypyViewerProvider
             </script>
 
             <!-- Add monaco-vendor.js script BEFORE your main webview script -->
-            <script src="${String(monacoVendorUri)}"></script>
+            <script nonce="${nonce}" src="${String(monacoVendorUri)}"></script>
 
             <!-- Your main webview script that uses the global monaco -->
-            <script defer src="${String(scriptUri)}"></script>
+            <script nonce="${nonce}" defer src="${String(scriptUri)}"></script>
 
             </body>
             </html>

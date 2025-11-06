@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { DeviceObjectType } from '../pybricks/autodetect/detection-logic';
-import { getScriptUri } from './utils';
+import { getNonce, getScriptUri } from './utils';
 
 const AUTODETECT_ROBOT_SIZING_WEBVIEW_NAME = 'AutodetectWebview';
 
@@ -148,6 +148,9 @@ export class AutodetectPanel {
             ),
         );
 
+        // Generate a nonce for secure script execution
+        const nonce = getNonce();
+
         return /* html */ `
             <!DOCTYPE html>
             <html>
@@ -157,11 +160,11 @@ export class AutodetectPanel {
                 <meta http-equiv="Content-Security-Policy"
                     content="default-src 'none'; font-src ${
                         webview.cspSource
-                    }; style-src 'unsafe-inline' ${
+                    }; style-src ${
             webview.cspSource
-        }; script-src 'unsafe-inline' 'unsafe-eval' ${webview.cspSource}; img-src ${
+        } 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${
             webview.cspSource
-        };"/>
+        } data:;"/>
                 <link href="${codiconsUri.toString()}" rel="stylesheet" />
                 <style>
                     * {
@@ -450,7 +453,7 @@ export class AutodetectPanel {
                     </div>
                 </div>
 
-                <script src="${scriptUri.toString()}"></script>
+                <script nonce="${nonce}" src="${scriptUri.toString()}"></script>
             </body>
             </html>
         `;
