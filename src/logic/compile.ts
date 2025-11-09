@@ -65,7 +65,8 @@ export async function compileWorkerAsync(
     slot: number | undefined;
     language: string;
 }> {
-    await vscode.commands.executeCommand('workbench.action.files.saveAll');
+    // save current file if dirty, save any other open files in resolve step
+    await vscode.commands.executeCommand('workbench.action.files.save');
 
     const parts: BlobPart[] = [];
     const { uri, content, filename, folder, language } = getActivePythonCode();
@@ -289,6 +290,7 @@ async function compileInternal(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     (global as any).fetch = undefined;
     try {
+        // compile the module
         const compiled = await compile(path, content, undefined, undefined)
             .catch((e) => {
                 console.error(`Failed to compile ${name}: ${e}`);
@@ -301,6 +303,7 @@ async function compileInternal(
         return [compiled.status, compiled.mpy];
     } catch {
         // NOOP
+        console.log('Compilation failed due to unexpected error.');
     }
     return [1, undefined];
 }
@@ -319,6 +322,15 @@ async function resolveModuleAsync(
         const uri = vscode.Uri.file(absolutePath);
         const stats = await vscode.workspace.fs.stat(uri);
         if (stats.type === vscode.FileType.File) {
+            // check if the document has editor and if yes, chekc if it is dirty and save it
+            const activeEditor = vscode.workspace.textDocuments.find(
+                (doc) => doc.uri.fsPath === uri.fsPath,
+            );
+            if (activeEditor?.isDirty) {
+                await activeEditor.save();
+            }
+
+            // return the file
             return {
                 uri,
                 name: module,
