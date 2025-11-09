@@ -11,6 +11,11 @@ const DATALOG_PANEL_ID = EXTENSION_KEY + '-datalogview';
 const DATALOG_VIEW_ID = EXTENSION_KEY + '-datalogview';
 const DATALOG_WEBVIEW_NAME = 'DatalogWebview';
 
+export const enum ChartType {
+    Line = 'line',
+    Bar = 'bar',
+}
+
 export class DatalogView implements vscode.WebviewViewProvider, vscode.Disposable {
     public static readonly viewType = DATALOG_VIEW_ID;
     private static _instance: DatalogView | undefined;
@@ -104,6 +109,17 @@ export class DatalogView implements vscode.WebviewViewProvider, vscode.Disposabl
         await this.currentWebviewView?.webview.postMessage({
             command: 'addData',
             row,
+        });
+    }
+
+    /**
+     * Set the chart type (line or bar)
+     * @param value The chart type to set. If null, toggles between line and bar.
+     */
+    public async setChartType(value: ChartType | null) {
+        await this.currentWebviewView?.webview.postMessage({
+            command: 'setChartType',
+            type: value,
         });
     }
 

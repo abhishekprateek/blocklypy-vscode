@@ -2,6 +2,8 @@
 
 ## TODO Items
 
+- Add help portal link, maybe even add direct links / lookups per instructions
+    https://docs.pybricks.com/en/latest
 - Snippets
 - USB connect: EV3/Spike
 - Consider `TextDocumentContentProvider`  

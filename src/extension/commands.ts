@@ -7,6 +7,7 @@ import { connectDeviceAsyncAny } from '../commands/connect-device';
 import { PromptDeviceNotificationPlotFilter } from '../commands/device-notifications';
 import { disconnectDeviceAsync } from '../commands/disconnect-device';
 import { moveSlotAny } from '../commands/move-slot';
+import { openHelpPortal } from '../commands/open-help-portal';
 import { startUserProgramAsync } from '../commands/start-user-program';
 import { stopUserProgramAsync } from '../commands/stop-user-program';
 import {
@@ -22,6 +23,7 @@ import { hasState, StateProp } from '../logic/state';
 import { plotManager } from '../plot/plot';
 import { getActiveFileFolder, getDateTimeString } from '../utils/files';
 import { BlocklypyViewerProvider, ViewType } from '../views/BlocklypyViewerProvider';
+import { DatalogView } from '../views/DatalogView';
 import { PythonPreviewProvider } from '../views/PythonPreviewProvider';
 import Config, { ConfigKeys, FeatureFlags } from './config';
 import { logDebug } from './debug-channel';
@@ -56,16 +58,24 @@ export enum Commands {
     StopScanning = EXTENSION_KEY + '.stopScanning',
     DataLogOpenCSV = EXTENSION_KEY + '.datalogOpenCSV',
     DatalogClear = EXTENSION_KEY + '.datalogClear',
+    SetChartType = EXTENSION_KEY + '.setChartType',
     PromptDeviceNotificationPlotFilter = EXTENSION_KEY +
         '.promptDeviceNotificationPlotFilter',
     StartREPL = EXTENSION_KEY + '.startREPL',
     StartHubMonitor = EXTENSION_KEY + '.startHubMonitor',
     InsertPybricksTemplate = EXTENSION_KEY + '.insertPybricksTemplate',
     CreatePybricksFile = EXTENSION_KEY + '.createPybricksFile',
+    OpenHelpPortal = EXTENSION_KEY + '.openHelpPortal',
     // StartJupyter = EXTENSION_KEY + '.startJupyter',
 }
 
 export const CommandMetaData: CommandMetaDataEntryExtended[] = [
+    {
+        command: Commands.OpenHelpPortal,
+        title: 'Pybricks Help Portal',
+        icon: '$(book)',
+        handler: openHelpPortal, // Use the imported command handler
+    },
     {
         command: Commands.ToggleSetting,
         handler: async (...args: unknown[]) => {
@@ -235,6 +245,12 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
         command: Commands.DatalogClear,
         handler: async () => {
             await plotManager.resetPlotParser();
+        },
+    },
+    {
+        command: Commands.SetChartType,
+        handler: async () => {
+            await DatalogView.Instance?.setChartType(null);
         },
     },
     {

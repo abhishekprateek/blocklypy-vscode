@@ -252,6 +252,13 @@
         "enablement": "blocklypy-vscode.isPlotDataAvailable"
       },
       {
+        "command": "blocklypy-vscode.setChartType",
+        "title": "Toggle Chart Type",
+        "category": "BlocklyPy Commander",
+        "icon": "$(graph)",
+        "enablement": "blocklypy-vscode.isPlotDataAvailable"
+      },
+      {
         "command": "blocklypy-vscode.promptDeviceNotificationPlotFilter",
         "title": "Set Device Notification Plot Filter",
         "category": "BlocklyPy Commander",
@@ -284,6 +291,12 @@
         "title": "New Pybricks Python File",
         "category": "BlocklyPy Commander",
         "icon": "$(new-file)"
+      },
+      {
+        "command": "blocklypy-vscode.openHelpPortal",
+        "title": "Open Pybricks Help Portal",
+        "category": "BlocklyPy Commander",
+        "icon": "$(book)"
       }
     ],
     "viewsContainers": {
@@ -362,6 +375,16 @@
         "command": "blocklypy-vscode.pythonPreview.showSource",
         "key": "f7",
         "when": "activeCustomEditorId == blocklypy-vscode-pythonPreview"
+      },
+      {
+        "command": "blocklypy-vscode.openHelpPortal",
+        "key": "shift+f1",
+        "when": "editorLangId == python"
+      },
+      {
+        "command": "blocklypy-vscode.setChartType",
+        "key": "ctrl+f7",
+        "when": "activePanel == workbench.view.extension.blocklypy-vscode-datalogview"
       }
     ],
     "configuration": {
@@ -484,6 +507,11 @@
         {
           "command": "blocklypy-vscode.datalogClear",
           "group": "navigation@3",
+          "when": "view == blocklypy-vscode-datalogview && blocklypy-vscode.isPlotDataAvailable"
+        },
+        {
+          "command": "blocklypy-vscode.setChartType",
+          "group": "navigation@4",
           "when": "view == blocklypy-vscode-datalogview && blocklypy-vscode.isPlotDataAvailable"
         }
       ],
