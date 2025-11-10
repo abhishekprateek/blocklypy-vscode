@@ -9,10 +9,15 @@ export async function compileOnlyAsync(
     isCompiled?: boolean,
     debug = false,
 ): Promise<void> {
-    await runPhase1Async({
-        noDebug: !debug,
-        compiled: isCompiled,
-    });
+    try {
+        await runPhase1Async({
+            noDebug: !debug,
+            compiled: isCompiled,
+        });
+    } catch (e) {
+        const error = String(e).replace(/\n(?!\r)/g, '\r\n');
+        logDebug(`❌ Compilation failed: ${error}`);
+    }
 }
 
 export async function compileAndRunAsync(
@@ -46,7 +51,8 @@ export async function compileAndRunAsync(
                     });
                 }
             } catch (e) {
-                logDebug(`${String(e)}`);
+                const error = String(e).replace(/\n(?!\r)/g, '\r\n');
+                logDebug(`❌ Compile and run failed: ${error}`);
             }
         },
     );

@@ -1,5 +1,5 @@
 import { compile } from '@pybricks/mpy-cross-v6';
-import { parse, walk } from '@pybricks/python-program-analysis';
+import { Module, parse, walk } from '@pybricks/python-program-analysis';
 import path from 'path';
 import * as vscode from 'vscode';
 import { ConnectionManager } from '../communication/connection-manager';
@@ -14,6 +14,7 @@ import { logDebug } from '../extension/debug-channel';
 import { transformCodeForPlot } from '../plot/compile-helper';
 import { BlocklypyViewerProvider } from '../views/BlocklypyViewerProvider';
 import { setState, StateProp } from './state';
+import { handleReportPythonError } from './stdout-helper';
 
 export const MAIN_MODULE = '__main__';
 export const __MAIN_MODULE_PATH = '__main__.py'; // not used currently
@@ -30,6 +31,20 @@ export type CompileModule = {
     usercode: boolean; // user module vs internal module, added automatically, not by user
     mpy?: Uint8Array; // filled after compilation
 };
+
+/**
+ * CompileError interface for handling compilation errors with detailed hash information.
+ * Using internals of jison-based parser / dt-python-parser
+ */
+interface CompileError extends Error {
+    hash: {
+        text: string;
+        token: string;
+        line: number;
+        loc: Record<string, unknown>;
+        expected: unknown[];
+    };
+}
 
 function getBreakpointsFromEditors(): Map<string, number[]> {
     const breakpointsByFile = new Map<string, number[]>();
@@ -144,7 +159,7 @@ export async function compileWorkerAsync(
             }
 
             // Compiling module may reveal more imports, so check those too
-            const importedModules = findImportedModules(module.content);
+            const importedModules = findImportedModules(module, module.content);
             for (const importedModule of importedModules) {
                 if (checkedModules.has(importedModule) || !folder) {
                     continue;
@@ -375,10 +390,27 @@ async function resolveModuleAsync(
     return undefined;
 }
 
-function findImportedModules(py: string): ReadonlySet<string> {
+function findImportedModules(cmodule: CompileModule, py: string): ReadonlySet<string> {
     const modules = new Set<string>();
 
-    const tree = parse(py);
+    let tree: Module | undefined;
+    try {
+        tree = parse(py);
+    } catch (e: unknown) {
+        if (e instanceof Error && e.hasOwnProperty('hash')) {
+            const compileError = e as CompileError;
+            const message = `Expecting ${String(compileError.hash.expected)} got '${
+                compileError.hash.text
+            }'`;
+
+            handleReportPythonError(
+                cmodule.filename,
+                compileError.hash.line - 1, // lines are 1-based in hash
+                message,
+            );
+        }
+        throw e;
+    }
 
     walk(tree, {
         onEnterNode(node, _ancestors) {

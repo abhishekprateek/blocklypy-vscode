@@ -329,8 +329,7 @@ export class PybricksTunnelDebugSession extends LoggingDebugSession {
                 compiled: args.compiled,
                 slot: args.slot,
             };
-            const _args1 = await runPhase1Async(runOptions);
-            //!!args1.files,
+            await runPhase1Async(runOptions);
 
             // 3. start the program in the runtime
             await this._runtime.start(

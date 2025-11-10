@@ -24,7 +24,7 @@ export type runOptions = {
 
 const PROGRAM_SIZE_DISPLAY_PROGRESS_THRESHOLD = 5 * 1024; // 5 KB
 
-export async function runPhase1Async(args: runOptions) {
+export async function runPhase1Async(args: runOptions): Promise<void> {
     clearPythonErrors();
     if (Config.get<boolean>(ConfigKeys.TerminalAutoClear) === true) clearDebugLog();
 
@@ -71,8 +71,6 @@ export async function runPhase1Async(args: runOptions) {
                 .map(([k, v]) => `  └ ${path.basename(k)}: ${v.mpy?.byteLength} bytes`)
                 .join('\r\n'),
         );
-
-    return args;
 }
 
 export async function runPhase2Async(args: runOptions): Promise<void> {

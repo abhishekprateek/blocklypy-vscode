@@ -28,7 +28,11 @@ export function clearStdOutDataHelpers() {
     plotManager.resetPlotParser().catch(console.error);
 }
 
-function handleReportPythonError(filename: string, line: number, message: string) {
+export function handleReportPythonError(
+    filename: string,
+    line: number,
+    message: string,
+) {
     // onReport callback
     setTimeout(() => {
         reportPythonError(filename, line, message).catch(console.error);
