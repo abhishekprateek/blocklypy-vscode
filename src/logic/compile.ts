@@ -65,42 +65,49 @@ export async function compileWorkerAsync(
     slot: number | undefined;
     language: string;
 }> {
-    // save current file if dirty, save any other open files in resolve step
-    await vscode.commands.executeCommand('workbench.action.files.save');
-
     const parts: BlobPart[] = [];
-    const { uri, content, filename, folder, language } = getActivePythonCode();
-    if (!content) throw new Error('No Python code available to compile.');
-
-    const slot = checkMagicHeaderComment(content).slot;
-    if (isCompiled === false) {
-        const data = encoder.encode(content);
-        // NOTE: cannot add debug unless the concatenation trick is used
-        return {
-            uri,
-            data,
-            filename: FILENAME_SAMPLE_RAW,
-            files: [uri.fsPath],
-            slot,
-            language,
-        };
-    }
-
+    let uri: vscode.Uri;
+    let content: string | undefined;
+    let filename: string | undefined;
+    let language: string | undefined;
+    let folder: string | undefined;
+    let slot: number | undefined;
     let mpyCurrent: Uint8Array | undefined;
     const modules: CompileModule[] = [];
-    const filename_py = ensurePyExtension(path.basename(filename)); // was: MAIN_MODULE_PATH,
-    modules.push({
-        uri,
-        name: MAIN_MODULE,
-        path: filename_py,
-        usercode: true,
-        filename: filename,
-        content,
-    });
-    compiledModules.clear();
 
     setState(StateProp.Compiling, true);
     try {
+        // save current file if dirty, save any other open files in resolve step
+        await vscode.commands.executeCommand('workbench.action.files.save');
+
+        ({ uri, content, filename, folder, language } = getActivePythonCode());
+        if (!content) throw new Error('No Python code available to compile.');
+
+        slot = checkMagicHeaderComment(content).slot;
+        if (isCompiled === false) {
+            const data = encoder.encode(content);
+            // NOTE: cannot add debug unless the concatenation trick is used
+            return {
+                uri,
+                data,
+                filename: FILENAME_SAMPLE_RAW,
+                files: [uri.fsPath],
+                slot,
+                language,
+            };
+        }
+
+        const filename_py = ensurePyExtension(path.basename(filename)); // was: MAIN_MODULE_PATH,
+        modules.push({
+            uri,
+            name: MAIN_MODULE,
+            path: filename_py,
+            usercode: true,
+            filename: filename,
+            content,
+        });
+        compiledModules.clear();
+
         const checkedModules = new Set<string>();
         const assetImportedModules = new Set<string>();
         const breakpointsFromEditors = getBreakpointsFromEditors();

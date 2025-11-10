@@ -4,10 +4,6 @@ All significant updates to the "blocklypy" extension are tracked in this file.
 
 ## [0.7.22] - 2025-11-10
 
-### Added
-
-- Documented keybindings in README.md.
-
 ### Fixed
 
 - Fixed echoing terminal input in Pybricks REPL mode.

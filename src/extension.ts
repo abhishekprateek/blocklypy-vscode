@@ -133,9 +133,12 @@ function onActiveEditorSaveCallback(document: vscode.TextDocument) {
     const activeEditor = vscode.window.activeTextEditor;
 
     if (
+        // autostart only if the saved document is the active one
         activeEditor?.document !== document ||
         document.languageId !== 'python' ||
-        !Config.FeatureFlag.get(FeatureFlags.AutoStartOnMagicHeader)
+        !Config.FeatureFlag.get(FeatureFlags.AutoStartOnMagicHeader) ||
+        // if compiling already, do not start another compile/run cycle
+        hasState(StateProp.Compiling)
     ) {
         return;
     }
