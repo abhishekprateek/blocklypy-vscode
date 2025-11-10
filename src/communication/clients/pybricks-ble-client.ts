@@ -135,6 +135,11 @@ export class PybricksBleClient extends BaseClient {
         return undefined;
     }
 
+    public override get allowTerminalInputEcho(): boolean {
+        // disable echo in REPL mode
+        return this.slot !== BuiltinProgramId.REPL;
+    }
+
     constructor(metadata: DeviceMetadataWithPeripheral, parent: BaseLayer) {
         super(metadata, parent);
         this._incomingDataQueue = fastq.promise(

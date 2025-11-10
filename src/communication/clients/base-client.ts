@@ -94,6 +94,10 @@ export abstract class BaseClient {
         return this._slot !== undefined ? String(this._slot) : undefined;
     }
 
+    public get allowTerminalInputEcho(): boolean {
+        return true;
+    }
+
     public abstract write(data: Uint8Array, withoutResponse: boolean): Promise<void>;
 
     public async updateDeviceNotifications(): Promise<void> {

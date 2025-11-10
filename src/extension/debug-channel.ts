@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ConnectionManager } from '../communication/connection-manager';
 import { DebugTunnel } from '../debug-tunnel/debug-tunnel';
 import { extensionContext } from '../extension';
 import { hasState, StateProp } from '../logic/state';
@@ -88,7 +89,9 @@ export class DebugTerminal implements vscode.Pseudoterminal {
         if (!hasState(StateProp.Running)) return; // ignore input if user program is not not running
 
         this.onUserInput(data); // send to BLE device
-        this.write(data, '\x1b[32m' /* green */);
+
+        if (ConnectionManager.client?.allowTerminalInputEcho)
+            this.write(data, '\x1b[32m' /* green */);
     }
 
     public handleDataFromHubOutput(
