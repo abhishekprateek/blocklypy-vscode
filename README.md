@@ -3,147 +3,174 @@
 [![Version](https://img.shields.io/visual-studio-marketplace/v/afarago.blocklypy-vscode?label=VS%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=afarago.blocklypy-vscode)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A Visual Studio Code extension to interact with LEGO® Hubs running the Pybricks
-and official HubOS v3 firmware.
+A powerful Visual Studio Code extension designed to supercharge your development
+with LEGO® Hubs, supporting both Pybricks and official HubOS v3 firmware.
+Seamlessly connect, program, debug, and analyze your LEGO robotics projects
+directly from your favorite editor.
 
-## Features
+## ✨ Key Features
 
-Streamline your Pybricks and HubOS LEGO SPIKE coding experience with:
+### 🔌 Hub Connectivity & Control
 
-- **Connect/disconnect your Hub** via Bluetooth or USB
-- **Start/stop programs** directly from VS Code
-- **Compile and upload Python scripts** from your workspace
-- **View compilation and runtime errors** in your code
-- **Auto-connect** to the last used hub
-- **Auto-start** your script on save
-- **Open and convert** majority of the LEGO robotics file formats
-- **Receive program status** and **display hub output messages**
-- **Plot** live sensor data and save to csv
-- **Quick-start templates** for Pybricks Python files with hub-specific imports\
-  and auto detectied devices
-- Experimental: **Debug** your code in VSCode
+- **Universal Connection:** Connect to your LEGO Hubs (Pybricks, HubOS v3)
+  effortlessly via **Bluetooth** or **USB**.
+  ![Connect Device](./screenshots/connect_device.png)
+- **Program Lifecycle Management:** **Start and stop** programs on your
+  connected hub directly from VS Code.
+- **Advanced Slot Management (HubOS):**
+  - **Clear Slots:** Erase individual program slots or wipe all slots clean.
+  - **Move Slots:** Reorganize your stored programs with ease.
+  ![Clear Slots](./screenshots/slot_management.png)
+- **Interactive REPL (Pybricks):** Engage in live coding with a Read-Eval-Print
+  Loop session for immediate feedback.
+  ![REPL Session](./screenshots/repl_session.png)
+- **Real-time Hub Monitoring:** Get live insights into device activity and
+  performance, invaluable for diagnostics and optimization.
+- **Smart Connection Features:**
+  - **Auto-Connect:** Automatically reconnects to your last-used hub upon
+    startup.
+  - **Stop Scanning on Window Blur:** A configurable setting to conserve
+    resources by pausing Bluetooth scans when VS Code is not in focus.
 
-## Getting Started
+### 🚀 Code Development & Deployment
 
-1. **Install** this extension from the
-   [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=afarago.blocklypy-vscode).
-2. **Connect** your LEGO Hub via Bluetooth.
-3. **Create** a new Pybricks Python file with templates:
-   - Open Command Palette (`Ctrl+Shift+P`)
-   - Type "New Pybricks Python File" and select your hub type
-   - Or type `pybricks` in a Python file to insert a template snippet
-4. **Run** your program by pressing `F5` or using the Run button.
+- **Effortless Compile & Run:** Write your Python scripts, then compile and
+  upload them to your hub with a single command, followed by automatic
+  execution.
+- **Integrated Debugging:** Unlock the power of VS Code's debugger for your
+  Pybricks projects. Set breakpoints, step through code, and inspect variables
+  to understand and fix issues faster.
+  ![Debugging Session](./screenshots/debug_session.png)
+- **MicroPython Notebook Support:** Run and manage `.ipynb` cells directly on
+  your connected device, enabling interactive data exploration and code
+  execution.
+- **Rapid Project Creation with Templates:**
+  - **Intelligent Snippets:** Quickly insert common Pybricks code structures
+    using snippets like `pybricks`, `primehub`, `inventorhub`.
+    ![Template Snippet](./screenshots/template_snippet.gif)
+  - **Command Palette Integration:** Use "Insert Pybricks Template" to add
+    boilerplate code to your current file or "New Pybricks Python File" to
+    create a fresh, templated file.
+    ![Template Command Palette](./screenshots/template_command_palette.png)
+  - Templates come pre-configured with essential imports and auto-detected
+    device configurations.
+- **Seamless Auto-Start:** Include a magic header comment (e.g.,
+  `# LEGO autostart`) in your Python files to automatically upload and run your
+  script on the hub every time you save.
 
-## Guide: Fun First Things to Explore
+### 📊 Monitoring & Diagnostics
 
-- **Connect** to a SPIKE Pybricks Hub via Bluetooth
-- **Connect** to a LEGO SPIKE offical HubOS Hub via Bluetooth
-- **Reconnect** to the last Pybricks Hub via Bluetooth
-- Check out the **auto-connect** to the last Hub via Bluetooth on VSCode start
-- Open a **Pybricks Python file**, compile and upload
-- Open a **LEGO standard Python file**, compile and upload
-- Use the **auto-start** feature by adding `# LEGO autostart` header
-- Check the feedback for any **runtime error** reported by the hub
-- Check the feedback from any **print statements** reported by the hub
-- **Use imports** from other local python modules
-- Open a **depedency graph** to explore the project call dependencies
-- Open a **SPIKE hub version 3 or version 2** file to check the blockly preview
-- Explore **pseudocode** to see a simplified text representation of the SPIKE
-  code
-- Check the **converted Pybricks Python** code, compile and run it directly
-- Observe the **dependency call graph** for the SPIKE file
-- Make changes on the SPIKE source file in the LEGO app, and **see instant
-  updates**
-- Open a **Robot Inventor MINDSTORMS App file** and check the above features
-- Open a **SPIKE Essential Iconblocks file** and check the above features
-- Open an **EV3 classic EV3-G file** and check the pseudocode and graph features
-- Check the converted python code for the EV3G file; compile and run it
-- Download a **compiled and running binary (.rbf) file** from your EV3 hub and
-  check the pseudocode, python code and graph features
-- Open an **EV3 iPad file** and check the pseudocode, python and graph features
-- Open an **EV3 classroom file** and check the pseudocode, python and graph
-  features
-- Open a **WeDo 2.0 file** to explore pseudocode and Python conversion features
-- Visualize sensor data from your hub by using plot commands for datalogging and
-  real-time charts
+- **Real-time Datalogging & Plotting:** Visualize live sensor data and program
+  outputs from your hub.
+  ![Datalogging Plot](./screenshots/datalog_plot.gif)
+  - **Dynamic Charts:** Plot data in real-time by parsing special `plot:`
+    commands from your device's standard output.
+  - **CSV Export:** Automatically save incoming sensor data to a `.csv` file for
+    later analysis.
+- **Granular Device Notification Filtering:** Filter and plot specific device
+  notifications, offering deep insights for advanced debugging and analysis.
+- **Comprehensive Error Reporting:** See detailed compilation and runtime errors
+  directly in VS Code, allowing for quick identification and resolution.
+  ![Error Reporting](./screenshots/error_reporting.png)
+- **Program Status & Output Console:** Receive real-time updates on program
+  status and view all messages outputted by your hub in a dedicated console.
 
-## Supported LEGO File Formats
+### 📂 File Format Support & Analysis
 
-This extension opens, displays, analyzes, and converts most major LEGO robotics
-file formats for easy onboarding, backup, and analysis.
+This extension is a versatile tool for opening, displaying, analyzing, and
+converting major LEGO robotics file formats, simplifying project onboarding,
+backup, and code inspection.
 
-<img src='./screenshots/devtypes/devtype_ev3b.png'>
-<img src='./screenshots/devtypes/devtype_ev3classroom.png'>
-<img src='./screenshots/devtypes/devtype_ev3g.png'>
-<img src='./screenshots/devtypes/devtype_pybricks.png'>
-<img src='./screenshots/devtypes/devtype_robotinventor.png'>
-<img src='./screenshots/devtypes/devtype_spike.png'>
-<img src='./screenshots/devtypes/devtype_wedo2.png'>
+- **Extensive Platform & File Type Support:**
+  - **SPIKE Prime / Essentials / Robot Inventor:**
+    - SPIKE v2 (`.llsp`) and v3 (`.llsp3`) for both word-blocks and icon-blocks.
+    - Robot Inventor (`.lms`).
+  - **EV3 Mindstorms:**
+    - EV3 Classroom (`.lmsp`), EV3 Lab (`.ev3`), EV3 iPad (`.ev3m`).
+    - EV3 Lab Compiled Binary (`.rbf`).
+  - **WeDo 2.0:**
+    - LEGO WeDo 2.0 project files (`.proj`).
+  - **Pybricks:**
+    - Pybricks Python (`.py`), with robust multi-file support.
+- **Powerful Analysis Tools for LEGO Files:**
+  - **Pseudocode Representation:** Transform complex block programs into
+    easy-to-read text-based pseudocode.
+    ![Pseudocode Preview](./screenshots/pseudocode_preview.png)
+  - **Graphical Preview:** Get an instant visual overview of your block-based
+    code.
+  - **Module Dependency Visualization:** Understand your code's structure and
+    interdependencies with an intuitive graph.
+  - **Python Code Conversion:** (Experimental) Convert block code directly into
+    compatible Pybricks Python code.
+    ![BlocklyPy Python Conversion](./screenshots/blocklypy_python_conversion.png)
+- **Direct Code Views:**
+  - **Show Python Code:** View the underlying Python code generated from
+    `.llsp3` files.
+  - **Show Python Preview:** Render dependency visualization for any Python file
+    in a dedicated, side-by-side view.
+    ![Python Code Preview](./screenshots/python_code_preview.png)
 
-### Features for LEGO Files
+### 🤝 Convenience & Help
 
-- Pseudocode representation of block programs
-- Graphical preview of block-based code
-- Module dependency visualization of code structure
-- Convert block code to compatible Pybricks Python code<sup>\*</sup>
+- **Configurable Settings:** Easily toggle extension settings and experimental
+  feature flags to customize your workflow.
+- **Contextual Help Portal:** Access the official Pybricks Help Portal directly.
+  The extension intelligently navigates to relevant documentation based on your
+  currently selected Python type or keyword.
 
-<sup>\*Experimental: Please verify converted code and provide feedback.</sup>
+## 🚀 Getting Started
 
-### Platforms & File Types
+1.  **Install** the "BlocklyPy Commander" extension from the
+    [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=afarago.blocklypy-vscode).
+2.  **Connect** your LEGO Hub: Simply activate the extension and follow prompts
+    to connect via Bluetooth (or USB if supported).
+3.  **Create Your First Project:**
+    - Open the VS Code Command Palette (`Ctrl+Shift+P`).
+    - Search for "New Pybricks Python File" and select your specific hub type to
+      generate a new, templated Python script.
+    - Alternatively, open any Python file and type `pybricks` (or `primehub`,
+      `inventorhub`, etc.) to use a template snippet.
+4.  **Run Your Code:** Press `F5` or use the dedicated Run button in the VS Code
+    interface to deploy and execute your program on the connected hub.
 
-#### SPIKE Prime / Essentials / Robot Inventor platform
+## 🌟 Guide: Fun First Things to Explore
 
-SPIKE Prime
-([45678](https://www.lego.com/en-us/product/lego-education-spike-prime-set-45678))
-and SPIKE Essentials
-([45345](https://www.lego.com/en-us/product/lego-education-spike-essential-set-45345))
-kit and Robot Inventor
-([51515](https://www.lego.com/en-us/product/robot-inventor-51515)) kit for
-**word-blocks** and **icon-blocks**.
+- **Connect** to a SPIKE Prime/Essential/Robot Inventor hub running Pybricks or
+  HubOS.
+- Experiment with the **auto-connect** feature for seamless workflow.
+- **Compile and upload** both Pybricks Python files and standard LEGO Python
+  files.
+- Try the **auto-start** feature using the `# LEGO autostart` header.
+- Monitor **runtime errors** and **print statements** from the hub in real-time.
+- Utilize **local Python modules** by importing them within your main script.
+- Visualize code structure with the **dependency graph** for complex projects.
+- Explore **blockly previews** for SPIKE Hub v2/v3 files.
+- Examine **pseudocode** for a simplified representation of block programs.
+- Convert and run **Pybricks Python** code generated from block programs.
+- Observe **instant updates** when modifying SPIKE source files in the LEGO app.
+- Open and analyze files from various platforms: Robot Inventor, SPIKE
+  Essential, EV3 (Classroom, Lab, iPad), and WeDo 2.0.
+- Download and inspect **compiled `.rbf` binaries** from EV3 hubs.
+- Experiment with **datalogging and real-time charts** to visualize sensor data.
 
-- SPIKE v2 (`.llsp`) and v3 (`.llsp3`)
-- Robot Inventor (`.lms`)
+## 🤖 Auto Start
 
-#### EV3 Mindstorms platform
+When a device is connected, your script can be configured to start automatically
+by adding a special header comment at the top of your Python file. This enables
+a seamless workflow—just save your file, and it will be uploaded and run on the
+hub automatically.
 
-LEGO® MINDSTORMS® EV3
-([31313](https://www.lego.com/en-us/product/lego-mindstorms-ev3-31313))
-**graphical-blocks** and **compiled-binary**.
-
-- EV3 Classroom (`.lmsp`)
-- EV3 Lab (`.ev3`)
-- EV3 iPad (`.ev3m`)
-- EV3 Lab Compiled Binary (`.rbf`)
-
-#### WeDo 2.0 platform
-
-LEGO® WeDo 2.0
-([45300](https://education.lego.com/en-us/products/lego-education-wedo-2-0-core-set/45300/))
-**graphical-blocks**.
-
-- LEGO WeDo 2.0 project files (`.proj`)
-
-#### Pybricks platform
-
-- Pybricks Python (`.py`), supports multiple files.
-
-## Auto start
-
-When device is connected, your script can be set to start automatically by
-adding a special header comment at the top of your Python file. This allows for
-seamless workflow—just save your file and it will upload and run on the hub
-automatically.
-
-Example usage:
+**Example for Pybricks Hubs:**
 
 ```python
 # LEGO autostart
 
 from pybricks.hubs import PrimeHub
+hub = PrimeHub()
 hub.speaker.beep()
 ```
 
-For LEGO HubOS devices you can use:
+**Example for LEGO HubOS devices (specifying a slot):**
 
 ```python
 # LEGO slot:0 autostart
@@ -151,42 +178,43 @@ For LEGO HubOS devices you can use:
 print('autostarted')
 ```
 
-## Data Logging
+## 📈 Data Logging & Plotting
 
-The extension now supports a datalogging view that can plot incoming data in
-real-time. This is done by parsing special "plot:" commands from the standard
-output of the connected device.
+The extension features a powerful datalogging view capable of plotting incoming
+data in real-time. This is achieved by parsing special "plot:" commands from the
+standard output of the connected device.
 
-To use this feature:
+**To utilize this feature:**
 
-1. Ensure your device is connected and running code that outputs data in the
-   expected format.
-2. Run a program that includes plotting commands.
-3. The view will automatically update with incoming data, plotting it in
-   real-time.
-4. Enable the **Auto-Save Plot Data** setting to automatically save incoming
-   sensor data to a `.csv` file.
+1.  Ensure your device is connected and executing code that outputs data in the
+    expected `plot:` format.
+2.  Run a program that includes these plotting commands.
+3.  The datalogging view will automatically update, displaying your data as it
+    arrives.
+4.  Activate the **"Auto-Save Plot Data"** setting to automatically save all
+    incoming sensor data to a `.csv` file.
 
-Plotting commands:
+**Plotting Commands Reference:**
 
-- `plot: start col1,col2,...` - Initializes a new plot with specified column
+- `plot: start col1,col2,...` - Initializes a new plot with the specified column
   names.
-- `plot: col1: value1, col2: value2, ...` - Adds a new data point with specified
-  values for each column. Missing values can be omitted.
-- `plot: value1,value2,...` - Adds a new data point with values in order.
-  Missing values can be represented by empty entries (e.g., `10,,30`).
-- `plot: end` - Ends the current plotting session.
+- `plot: col1: value1, col2: value2, ...` - Adds a new data point, explicitly
+  setting values for named columns. Missing values can be omitted.
+- `plot: value1,value2,...` - Adds a new data point with values provided in the
+  order of the columns defined by `plot: start`. Empty entries (e.g., `10,,30`)
+  represent missing values.
+- `plot: end` - Terminates the current plotting session.
 
-Algorithm:
+**How it Works:**
 
-- The extension listens for lines starting with "plot:".
-- It recognizes the "start" command to set up columns and initializes a buffer.
-- It processes incoming data lines, filling in values and handling missing data.
-- When a complete row of data is ready, it sends it to the webview for plotting.
-- Incomplete rows are buffered until they can be completed or flushed on a
-  timeout.
+- The extension continuously monitors lines beginning with "plot:".
+- The "start" command defines plot columns and initializes a data buffer.
+- Subsequent data lines are processed, filling in column values and managing
+  missing data points.
+- Complete data rows are then sent to the webview for real-time visualization.
+- Incomplete rows are buffered and flushed upon completion or a timeout.
 
-Example usage:
+**Example Pybricks Script with Plotting:**
 
 ```python
 from pybricks.hubs import PrimeHub
@@ -197,76 +225,80 @@ print("plot: start gyro")
 while True:
     print(f"plot: {hub.imu.heading()}")
     wait(100)
-print("plot: end") # This line will never be reached in this example
+print("plot: end") # This line will never be reached in this example, demonstrating continuous plotting
 ```
 
-## Debug Code
+## 🐞 Debug Code
 
-The extension now supports launching a VSCode debug session with a Pybricks hub
-is connected.
+The extension provides experimental support for launching VS Code debug sessions
+with a Pybricks hub connected. This feature significantly aids in identifying
+and resolving issues within your robotics code.
 
-Behind the scenes unofficial AppData channel is used, and due to the limitation
-of the framework slightly alters the code by injecting debug traps. This
-normally should not affect your code.
+**Important Usage Notes:**
 
-### Usage
+1.  **Set Breakpoints:** Place breakpoints in your Python code _before_ starting
+    the debug session.
+2.  **Launch Debug Session:** Initiate the debug session from VS Code.
+3.  **Step & Continue:** Once the debugger hits a breakpoint, you can step
+    through your code line by line, inspect variables, and continue execution to
+    the next breakpoint.
 
-1. Set breakpoints in your code prior to launching the debug sessions
-2. Launch the debug session.
-3. After the debugger is stopped on a breakpoint, Step/Continue to the next
-   breakpoint
+**Disclaimer:** This is an early preview feature. While generally stable, minor
+issues might occur. The code is only paused at explicitly set breakpoints.
 
-Disclaimer: it is still an early preview, might result in minor problems. Code
-is not stopped on any non-breakpoints.
+## 🏗️ Pybricks Templates
 
-## Pybricks Templates
+Jumpstart your projects with pre-configured templates tailored for different
+LEGO hubs. These templates include common imports, hub initialization code, and
+even auto-detect connected devices.
 
-Quickly start new projects with pre-configured templates for different LEGO
-hubs. Templates include common imports and hub initialization code.
+**Ways to Use Templates:**
 
-**Available methods:**
+- **Snippets:** Type `pybricks`, `primehub`, `inventorhub`, etc., directly in
+  your Python file to insert relevant boilerplate.
+- **Command Palette:** Use the "Insert Pybricks Template" command to add a
+  template to your current file.
+- **New File Creation:** Use the "New Pybricks Python File" command to create a
+  brand new file pre-populated with a chosen template.
 
-- **Snippets**: Type `pybricks`, `primehub`, `inventorhub`, etc. in a Python
-  file
-- **Command**: Use "Insert Pybricks Template" to add to current file
-- **New File**: Use "New Pybricks Python File" to create a templated file
+**Supported Hubs:** SPIKE Prime, SPIKE Essential, MINDSTORMS Robot Inventor,
+City Hub, Technic Hub.
 
-The template will also include auto detected devices on any connected device.
+## ⚠️ Limitations
 
-Supported hubs: SPIKE Prime, SPIKE Essential, MINDSTORMS Robot Inventor, City
-Hub, Technic Hub.
+- Only custom modules located in the same folder as the main script are
+  currently supported.
+- Complex package structures and relative imports are **not** yet supported.
+- Runtime error locations might occasionally be inaccurate, especially after
+  rapidly switching tabs or modifying files.
 
-## Limitations
+## 🙏 Acknowledgements
 
-- Only custom modules in the same folder as the main script are supported
-- Package structures and relative imports are **not** currently supported
-- Runtime error locations may be inaccurate after changing tabs
+This project builds upon the foundational work of Song-Pei Du
+([dusongpei](https://github.com/dsp05/pybricks-vscode)) and the pioneering
+efforts of the [Pybricks authors](https://github.com/pybricks), Laurens Valk and
+David Lechner.
 
-## Acknowledgements
+Special thanks to the LEGO® group for their comprehensive HubOS
+[documentation](https://lego.github.io/spike-prime-docs).
 
-This project is rooted on the work of Song-Pei Du
-[dusongpei](https://github.com/dsp05/pybricks-vscode) and on the work of the
-[Pybricks authors](https://github.com/pybricks), Laurens Valk and David Lechner.
-
-Many thanks for the HubOS
-[documentation](https://lego.github.io/spike-prime-docs) to the LEGO® group.
-
-## License
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
 
-## Screenshot
+## 📸 Screenshots
 
-![Screenshot: Overview](./screenshots/1.gif)
+Below are a selection of screenshots demonstrating the extension's key features:
 
-![Screenshot: Plot handling](./screenshots/plot.gif)
-
-![Screenshot: View](./screenshots/view-3.png)
-
-![Screenshot: View](./screenshots/view-1.png)
-
-![Screenshot: View](./screenshots/view-4.png)
-
-![Screenshot: View](./screenshots/view-2.png)
-
-![Screenshot: Autodetect](./screenshots/autodetect-template.png)
+- **Overview of Features:** ![Screenshot: Overview](./screenshots/1.gif)
+- **Connecting to a Device:** ![Connect Device](./screenshots/connect_device.png)
+- **Interactive REPL Session:** ![REPL Session](./screenshots/repl_session.png)
+- **Debugging a Program:** ![Debugging Session](./screenshots/debug_session.png)
+- **Inserting a Template via Snippet:** ![Template Snippet](./screenshots/template_snippet.gif)
+- **Inserting a Template via Command Palette:** ![Template Command Palette](./screenshots/template_command_palette.png)
+- **Real-time Datalogging Plot:** ![Datalogging Plot](./screenshots/datalog_plot.gif)
+- **Error Reporting:** ![Error Reporting](./screenshots/error_reporting.png)
+- **Pseudocode Preview:** ![Pseudocode Preview](./screenshots/pseudocode_preview.png)
+- **BlocklyPy to Python Conversion:** ![BlocklyPy Python Conversion](./screenshots/blocklypy_python_conversion.png)
+- **Python Code Preview:** ![Python Code Preview](./screenshots/python_code_preview.png)
+- **Autodetect Templates:** ![Screenshot: Autodetect](./screenshots/autodetect-template.png)

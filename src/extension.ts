@@ -4,7 +4,6 @@ import { stopUserProgramAsync } from './commands/stop-user-program';
 import { ConnectionManager } from './communication/connection-manager';
 import { BaseLayer } from './communication/layers/base-layer';
 import { BLELayer } from './communication/layers/ble-layer';
-import { MockLayer } from './communication/layers/mock-layer';
 import { USBLayer } from './communication/layers/usb-layer';
 import { MILLISECONDS_IN_SECOND } from './const';
 import { registerDebugTunnel } from './debug-tunnel/debug-tunnel';
@@ -114,7 +113,7 @@ async function deferredActivations(): Promise<void> {
 
     // Finally, initialize the connection manager and auto-connect if needed
     const layerTypes: (typeof BaseLayer)[] = [BLELayer, USBLayer];
-    if (isDevelopmentMode) layerTypes.push(MockLayer);
+    //!! if (isDevelopmentMode) layerTypes.push(MockLayer);
     await ConnectionManager.initialize(layerTypes).catch(console.error);
 }
 

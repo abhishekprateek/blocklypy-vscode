@@ -2,11 +2,49 @@
 
 All significant updates to the "blocklypy" extension are tracked in this file.
 
+## [0.7.22] - 2025-11-10
+
+### Added
+
+- Documented keybindings in README.md.
+
+### Fixed
+
+- Fixed echoing terminal input in Pybricks REPL mode.
+- Standardized string quotes and improved device payload handling.
+- Fixed ColorSensor usage.
+- Improved file saving logic.
+
+## [0.7.21] - 2025-11-09
+
+### Fixed
+
+- Inconsistent F5 / Control+F5 handling
+
+## [0.7.20] - 2025-11-08
+
+### Added
+
+- Help portal command and UI integration.
+- Added datalogview bar chart mode.
+
+## [0.7.18] - 2025-11-06
+
+### Refactor
+
+- Improved startup performance by moving connection manager initialization.
+
+### Fixed
+
+- Updated plotManager initialization.
+- Memory management improvements.
+- Simplified type-checked ESLint configuration.
+
 ## [0.7.19] - 2025-11-05
 
-## Added
+### Added
 
-- Added auto-detection of LEGO hubs and connected devices, including DriveBase detection
+- Auto-detection for LEGO hubs and connected devices, including DriveBase.
 
 ## [0.7.16] - 2025-11-02
 
@@ -39,13 +77,14 @@ All significant updates to the "blocklypy" extension are tracked in this file.
 ## Added
 
 - AIPP (AppData Instrumentation Protocol for Pybricks) channel handling
-- VSCode debug session over AIPP for a single file with breakpoints, variable get/set
+- VSCode debug session over AIPP for a single file with breakpoints, variable
+  get/set
 - Plot over AIPP
 - Device Notification monitoring to data log
 - Pybricks REPL starting from command
 - Experimental: REPL sending hubmonitor
-- Offical SPIKE Prime HubOS support, including SPIKE Essential and
-Robot Inventor Mindstorms Hubs.
+- Offical SPIKE Prime HubOS support, including SPIKE Essential and Robot
+  Inventor Mindstorms Hubs.
 - HubOS tunnel handling, weather notification response, plotting / logging
 - USB support for HubOS
 
@@ -71,7 +110,8 @@ Robot Inventor Mindstorms Hubs.
 ### Changed
 
 - Conversion warnings now appear in the debug channel
-- Fixed issue where compiling and uploading an empty workspace (0 bytes) caused errors
+- Fixed issue where compiling and uploading an empty workspace (0 bytes) caused
+  errors
 - Improved handling of the debug terminal
 
 ## [0.3.0] - 2025-09-12
