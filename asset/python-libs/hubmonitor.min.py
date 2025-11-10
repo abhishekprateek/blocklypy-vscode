@@ -5,29 +5,29 @@ from pybricks.tools import wait,AppData
 from pybricks.iodevices import PUPDevice
 
 class DM:
-  portchars = ['A','B','C','D','E','F']
-  face_map = {Side.TOP: 0,Side.BOTTOM: 1,Side.LEFT: 2,Side.RIGHT: 3,Side.FRONT: 4,Side.BACK: 5}
+  face_map = {Side.TOP:0,Side.BOTTOM:1,Side.LEFT:2,Side.RIGHT:3,Side.FRONT:4,Side.BACK:5}
 
   def __init__(self,hub,appdata):
-    self.hub = hub; self.ports = [getattr(Port,p,None) for p in self.portchars]
-    self.devs = [None]*len(self.portchars); self.infos = [None]*len(self.portchars)
-    self.detect = [-60]*len(self.portchars); self.i = 0; self.appdata = appdata
+    self.hub = hub; self.ports = [getattr(Port,p,None) for p in dir(Port)]
+    self.devs = [None]*len(self.ports); self.infos = [None]*len(self.ports)
+    self.detect = [-60]*len(self.ports); self.i = 0; self.appdata = appdata
 
   def get_dev_payload(self,pi,dev,info):
-    did = info.get("id")
+    did = info.get('id')
     try:
       if did in (48,49,65,75,76,38):
         ap,pwr,spd = dev.read(2)[0],dev.read(0)[0],dev.read(1)[0]
-        pos = dev.read(3)[0] if len(dev.info().get("modes",[])) > 3 else ap
+        pos = dev.read(3)[0] if len(dev.info().get('modes',[]))>3 else ap
         return pack('<BBBhhbi',0x0a,pi,did,ap,pwr,spd,int(pos))
       if did == 63:
         f,p = dev.read(0)[0],bool(dev.read(1)[0]); return pack('<BBBB',0x0b,pi,f,1 if p else 0)
       if did == 62: return pack('<BBh',0x0d,pi,dev.read(0)[0])
       if did == 61:
-        c,rgb = dev.read(0)[0],dev.read(3); r,g,b = (rgb if len(rgb) == 3 else (0,0,0))
+        # c,rgb = dev.read(0)[0],dev.read(3); r,g,b = (rgb if len(rgb) == 3 else (0,0,0))
+        c,r,g,b = dev.read(0)[0], 0, 0, 0 # color sensor does not support RGB and COLOR, will flicker
         return pack('<BBBHHH',0x0c,pi,c,r,g,b)
       if did == 37:
-        c,d = dev.read(0)[0],dev.read(1)[0]; return pack('<BBBHHH',0x0c,pi,c,0,0,0) + pack('<BBh',0x0d,pi,d)
+        c,d = dev.read(0)[0],dev.read(1)[0]; return pack('<BBBHHH',0x0c,pi,c,0,0,0)+pack('<BBh',0x0d,pi,d)
     except: pass
     return None
 
@@ -57,4 +57,4 @@ def aipp_send(data,appdata):
     appdata.write_bytes((b'\xfe' if i == 0 else b'\xff') + data[i:i+mtu] + (b'\x00' if (i+mtu) >= len(data) else b'\xff'))
     wait(10)
 
-DM(ThisHub(),AppData("")).loop_check(100)
+DM(ThisHub(),AppData('')).loop_check(100)
