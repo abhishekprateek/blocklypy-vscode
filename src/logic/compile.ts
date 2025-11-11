@@ -97,6 +97,7 @@ export async function compileWorkerAsync(
 
         ({ uri, content, filename, folder, language } = getActivePythonCode());
         if (!content) throw new Error('No Python code available to compile.');
+        content = stripBom(content);
 
         slot = checkMagicHeaderComment(content).slot;
         if (isCompiled === false) {
@@ -359,8 +360,10 @@ async function resolveModuleAsync(
                 path: relativePath,
                 usercode: true,
                 filename: path.basename(relativePath),
-                content: Buffer.from(await vscode.workspace.fs.readFile(uri)).toString(
-                    'utf8',
+                content: stripBom(
+                    Buffer.from(await vscode.workspace.fs.readFile(uri)).toString(
+                        'utf8',
+                    ),
                 ),
             };
         }
@@ -465,6 +468,14 @@ export async function loadPythonAssetModule(
         relativePath,
     );
     const file = await vscode.workspace.fs.readFile(uri);
-    const content = Buffer.from(file).toString('utf8');
+    const content = stripBom(Buffer.from(file).toString('utf8'));
     return { uri, content };
+}
+
+const BOM_CHAR = 0xfeff;
+function stripBom(str: string): string {
+    if (str.charCodeAt(0) === BOM_CHAR) {
+        return str.slice(1);
+    }
+    return str;
 }
