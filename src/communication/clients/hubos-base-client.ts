@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 
-import fastq, { queueAsPromised } from 'fastq';
 import { DeviceMetadata } from '..';
 import { MILLISECONDS_IN_SECOND } from '../../const';
 import { Commands } from '../../extension/commands';
@@ -43,6 +42,7 @@ import { handleDeviceNotificationAsync } from '../../user-hooks/device-notificat
 import { handleTunneleNotificationAsync } from '../../user-hooks/tunnel-notification-hook';
 import { sleep } from '../../utils';
 import { withTimeout } from '../../utils/async';
+import { BackpressureQueue } from '../../utils/backpressure-queue';
 import { BaseLayer } from '../layers/base-layer';
 import { crc32WithAlignment } from '../utils';
 import { BaseClient, StartMode } from './base-client';
@@ -60,10 +60,10 @@ export abstract class HubOSBaseClient extends BaseClient {
             (e: string) => void,
         ]
     >();
-    private _incomingDataQueue: queueAsPromised<InboundMessage>;
-    private _deviceNotificationQueue: queueAsPromised<DeviceNotificationPayload[]>;
-    private _tunnelPayloadQueue: queueAsPromised<TunnelPayload[]>;
-    private _consoleMessageQueue: queueAsPromised<string>;
+    private _incomingDataQueue: BackpressureQueue<InboundMessage>;
+    private _deviceNotificationQueue: BackpressureQueue<DeviceNotificationPayload[]>;
+    private _tunnelPayloadQueue: BackpressureQueue<TunnelPayload[]>;
+    private _consoleMessageQueue: BackpressureQueue<string>;
 
     public get capabilities() {
         return this._capabilities;
@@ -91,26 +91,35 @@ export abstract class HubOSBaseClient extends BaseClient {
     constructor(_metadata: DeviceMetadata | undefined, parent: BaseLayer) {
         super(_metadata, parent);
 
-        this._incomingDataQueue = fastq.promise(async (message: InboundMessage) => {
-            // console.debug(`Processing message: 0x${message.Id.toString(16)}`);
-            await this.handleIncomingMessage(message);
-        }, 1);
+        this._incomingDataQueue = new BackpressureQueue(
+            async (message: InboundMessage) => {
+                // console.debug(`Processing message: 0x${message.Id.toString(16)}`);
+                await this.handleIncomingMessage(message);
+            },
+            { name: 'HubOSIncomingData' },
+        );
 
         // handle console messages
-        this._consoleMessageQueue = fastq.promise(async (text: string) => {
-            await this.handleWriteStdout(text);
-        }, 1);
+        this._consoleMessageQueue = new BackpressureQueue(
+            async (text: string) => {
+                await this.handleWriteStdout(text);
+            },
+            { name: 'HubOSConsole' },
+        );
 
         // user hooks, to be reworked later
-        this._deviceNotificationQueue = fastq.promise(
+        this._deviceNotificationQueue = new BackpressureQueue(
             async (payload: DeviceNotificationPayload[]) => {
                 await handleDeviceNotificationAsync(payload);
             },
-            1,
+            { name: 'HubOSDeviceNotification' },
         );
-        this._tunnelPayloadQueue = fastq.promise(async (payload: TunnelPayload[]) => {
-            await handleTunneleNotificationAsync(payload);
-        }, 1);
+        this._tunnelPayloadQueue = new BackpressureQueue(
+            async (payload: TunnelPayload[]) => {
+                await handleTunneleNotificationAsync(payload);
+            },
+            { name: 'HubOSTunnel' },
+        );
     }
 
     public async finalizeConnect() {

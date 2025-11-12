@@ -1,5 +1,4 @@
 import { Characteristic } from '@stoprocent/noble';
-import fastq, { queueAsPromised } from 'fastq';
 import semver from 'semver';
 import { DeviceMetadata } from '..';
 import { MILLISECONDS_IN_SECOND } from '../../const';
@@ -39,6 +38,7 @@ import {
 import { maybe } from '../../pybricks/utils';
 import { sleep } from '../../utils';
 import { withTimeout } from '../../utils/async';
+import { BackpressureQueue } from '../../utils/backpressure-queue';
 import {
     CONNECTION_TIMEOUT_SEC_DEFAULT,
     RSSI_REFRESH_WHILE_CONNECTED_INTERVAL_MS,
@@ -80,8 +80,8 @@ export class PybricksBleClient extends BaseClient {
     private _capabilitiesCharacteristic: Characteristic | undefined;
     private _capabilities: Capabilities | undefined;
     private _version: VersionInfo | undefined;
-    private _incomingDataQueue: queueAsPromised<Buffer>;
-    private _incomingAppDataQueue: queueAsPromised<Buffer>;
+    private _incomingDataQueue: BackpressureQueue<Buffer>;
+    private _incomingAppDataQueue: BackpressureQueue<Buffer>;
     private _hubtype: HubTypeDescriptorType | undefined;
 
     public get descriptionKVP(): [string, string][] {
@@ -144,13 +144,13 @@ export class PybricksBleClient extends BaseClient {
 
     constructor(metadata: DeviceMetadataWithPeripheral, parent: BaseLayer) {
         super(metadata, parent);
-        this._incomingDataQueue = fastq.promise(
+        this._incomingDataQueue = new BackpressureQueue<Buffer>(
             async (data: Buffer) => this.handleIncomingData(data),
-            1,
+            { name: 'PybricksIncomingData' },
         );
-        this._incomingAppDataQueue = fastq.promise(
+        this._incomingAppDataQueue = new BackpressureQueue<Buffer>(
             async (data: Buffer) => this.handleIncomingAppData(data),
-            1,
+            { name: 'PybricksAppData' },
         );
     }
 
