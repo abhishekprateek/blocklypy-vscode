@@ -2,7 +2,7 @@
   "name": "blocklypy-vscode",
   "displayName": "BlocklyPy Commander for LEGO Robots",
   "description": "Interact with LEGO® Hubs running Pybricks firmware: compile and upload Python scripts, convert LEGO robotics files.",
-  "version": "0.7.24",
+  "version": "0.7.25",
   "engines": {
     "vscode": "^1.88.0"
   },
