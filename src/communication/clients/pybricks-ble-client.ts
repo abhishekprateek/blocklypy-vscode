@@ -404,7 +404,7 @@ export class PybricksBleClient extends BaseClient {
         slot?: number | StartMode,
         replContent?: string,
     ) {
-        if (typeof slot === 'number') {
+        if (typeof slot === 'number' || slot === undefined) {
             // slot is not supported on pybricks, always 0
             await this.write(createStartUserProgramCommand(slot ?? 0), false);
         } else if (slot === StartMode.REPL) {
