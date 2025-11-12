@@ -477,22 +477,22 @@
         {
           "command": "blocklypy-vscode.startScanning",
           "group": "navigation@2",
-          "when": "view == blocklypy-vscode-commands"
+          "when": "view == blocklypy-vscode-commands-tree && !blocklypy-vscode.isScanning"
         },
         {
           "command": "blocklypy-vscode.stopScanning",
           "group": "navigation@2",
-          "when": "view == blocklypy-vscode-commands"
+          "when": "view == blocklypy-vscode-commands-tree && blocklypy-vscode.isScanning"
         },
         {
           "command": "blocklypy-vscode.compileAndRun",
           "group": "navigation@1",
-          "when": "view == blocklypy-vscode-commands"
+          "when": "view == blocklypy-vscode-commands-tree && blocklypy-vscode.isConnected && !blocklypy-vscode.isRunning && (blocklypy-vscode.activeEditorLangId == python || activeCustomEditorId == blocklypy-vscode-blocklypyViewer)"
         },
         {
           "command": "blocklypy-vscode.stopUserProgram",
           "group": "navigation@1",
-          "when": "view == blocklypy-vscode-commands"
+          "when": "view == blocklypy-vscode-commands-tree && blocklypy-vscode.isConnected && blocklypy-vscode.isRunning"
         },
         {
           "command": "blocklypy-vscode.datalogOpenCSV",

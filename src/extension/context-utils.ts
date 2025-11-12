@@ -61,7 +61,7 @@ export function registerContextUtils(context: vscode.ExtensionContext) {
                 RefreshTree();
                 if (!event.value) {
                     void vscode.commands.executeCommand(
-                        'blocklypy-vscode-commands.focus',
+                        'workbench.view.extension.blocklypy-vscode-commands',
                     );
                 }
 

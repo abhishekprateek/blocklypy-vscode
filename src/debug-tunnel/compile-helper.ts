@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parser as rawParser } from '@lezer/python';
+import { ConnectionManager } from '../communication/connection-manager';
 import Config, { FeatureFlags } from '../extension/config';
 import { compiledModules, CompileModule } from '../logic/compile';
 
@@ -16,8 +17,11 @@ const STATEMENT_KEYWORD_RE =
     /^\s*(#|(async\s+)?(def|class|for|while|if|elif|else|import|from|global|nonlocal|type))\b/;
 
 export function PybricksDebugEnabled() {
-    return Config.FeatureFlag.get(
-        FeatureFlags.PybricksUseApplicationInterfaceForPybricksProtocol,
+    return (
+        ConnectionManager.client?.isPybricks &&
+        Config.FeatureFlag.get(
+            FeatureFlags.PybricksUseApplicationInterfaceForPybricksProtocol,
+        )
     );
 }
 

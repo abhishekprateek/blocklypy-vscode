@@ -89,6 +89,8 @@ export class PybricksBleClient extends BaseClient {
         const deviceDescription = this.classDescriptor.description;
         if (deviceDescription) kvp.push(['type', deviceDescription]);
 
+        if (this.hubType) kvp.push(['hub', this.hubType.label]);
+
         const firmware = this._version?.firmware ?? 'unknown';
         kvp.push(['firmware', firmware]);
         const software = this._version?.software ?? 'unknown';
