@@ -4,9 +4,10 @@ import fs from 'fs';
 import { EventEmitter } from 'vscode';
 import { MILLISECONDS_IN_SECOND } from '../const';
 import { DatalogView } from '../views/DatalogView';
+import { RingBuffer } from './ring-buffer';
 
 export const BUFFER_FLUSH_TIMEOUT_MS = 1 * MILLISECONDS_IN_SECOND; // ms
-const PLOT_MAX_ROWS = 100000;
+const PLOT_MAX_ROWS = 10000;
 
 type PlotStartEvent = { columns: string[]; rows: number[][] | undefined };
 type PlotDataEvent = number[];
@@ -19,7 +20,7 @@ export class PlotManager implements vscode.Disposable {
     private _buffer: number[] | undefined = undefined;
     private _bufferTimeout: NodeJS.Timeout | null = null;
     private _lastValues: number[] | undefined = undefined;
-    private _data: number[][] | undefined = undefined;
+    private _data: RingBuffer<number[]> | undefined = undefined;
     private _datastream: fs.WriteStream | null = null;
 
     public readonly onPlotStarted = new EventEmitter<PlotStartEvent>();
@@ -82,7 +83,8 @@ export class PlotManager implements vscode.Disposable {
     }
 
     public get data(): number[][] {
-        return this._data ? this._data : [];
+        console.debug('Getting plot data array', this._data?.length);
+        return this._data ? this._data.toArray() : [];
     }
 
     public get latest(): number[] | undefined {
@@ -144,9 +146,6 @@ export class PlotManager implements vscode.Disposable {
 
         const lineToWrite = [this.delta, ...this._buffer];
         this._data?.push(lineToWrite);
-        if (this._data && this._data.length > PLOT_MAX_ROWS) {
-            this._data.shift(); // keep last entries
-        }
 
         this.onPlotData.fire(lineToWrite);
 
@@ -189,11 +188,12 @@ export class PlotManager implements vscode.Disposable {
                     const idx = this._columns?.indexOf(col);
                     if (idx !== undefined && idx >= 0 && idx < this._buffer!.length) {
                         this._buffer![idx] = NaN;
-                        this._data =
-                            this._data?.map((row) => {
+                        if (this._data) {
+                            this._data = this._data.map((row) => {
                                 row[idx + 1] = NaN; // +1 because of timestamp column
                                 return row;
-                            }) || [];
+                            });
+                        }
                     }
                 });
                 return;
@@ -202,7 +202,7 @@ export class PlotManager implements vscode.Disposable {
 
         if (allColumnsToClear) {
             // clear all
-            this._data = [];
+            this._data?.clear();
             this.resetBuffer(true);
             return;
         }
@@ -211,7 +211,7 @@ export class PlotManager implements vscode.Disposable {
     public start(columns_: string[]) {
         this._startTime = Date.now();
         this._columns = columns_;
-        this._data = [];
+        this._data = new RingBuffer<number[]>(PLOT_MAX_ROWS);
 
         this._initialized = true;
         this.resetBuffer(true);
