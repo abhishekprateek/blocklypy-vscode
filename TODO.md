@@ -31,6 +31,7 @@
 
 ## DAP/PTU
 
+- add eval/exec for an ad-hoc eval command
 - Add instrumentation for plot as well!
 - Multi-file handling
 - Add configurable AppData protocol
