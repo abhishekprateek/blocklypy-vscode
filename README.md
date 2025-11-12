@@ -44,6 +44,7 @@ directly from your favorite editor.
 - **MicroPython Notebook Support:** Run and manage `.ipynb` cells directly on
   your connected device, enabling interactive data exploration and code
   execution.
+  ![Jupyter Notebook](./screenshots/notebook_jupyter.png)
 - **Rapid Project Creation with Templates:**
   - **Intelligent Snippets:** Quickly insert common Pybricks code structures
     using snippets like `pybricks`, `primehub`, `inventorhub`.
