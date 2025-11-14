@@ -1,8 +1,6 @@
 from ustruct import pack
-from pybricks.hubs import ThisHub
-from pybricks.parameters import Side,Port
-from pybricks.tools import wait,AppData
-from pybricks.iodevices import PUPDevice
+from pybricks.hubs import ThisHub; from pybricks.parameters import Side,Port
+from pybricks.tools import wait,AppData; from pybricks.iodevices import PUPDevice
 
 class DM:
   face_map = {Side.TOP:0,Side.BOTTOM:1,Side.LEFT:2,Side.RIGHT:3,Side.FRONT:4,Side.BACK:5}
