@@ -24,6 +24,8 @@
 - **Plot:** Ability to group metrics to same axis
 - Check/align USB with Pyb!
 - Visual hint about curve/... turns given the current parameters
+- custom local chat provider
+- Create a Roblox game and connection to Pybricks
 
 ### FLL
 
