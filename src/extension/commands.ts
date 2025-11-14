@@ -295,9 +295,31 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
                 ) ||
                 !Config.FeatureFlag.get(FeatureFlags.PlotDeviceNotification)
             ) {
-                throw new Error(
-                    'Enable the Pybricks Application Interface and Device Notification plot feature flags to use Hub Monitor.',
+                const BTN_ENABLE = 'Enable';
+                const answer = await vscode.window.showWarningMessage(
+                    'Do you want to enable the Pybricks Application Interface and Device Notification plot feature flags now?',
+                    {
+                        modal: true,
+                        detail: `The Hub Monitor requires these feature flags to be enabled. You can change them later in the extension settings if needed.`,
+                    },
+                    BTN_ENABLE,
                 );
+
+                if (answer === BTN_ENABLE) {
+                    await Config.FeatureFlag.set(
+                        FeatureFlags.PybricksUseApplicationInterfaceForPybricksProtocol,
+                        true,
+                    );
+                    await Config.FeatureFlag.set(
+                        FeatureFlags.PlotDeviceNotification,
+                        true,
+                    );
+                } else {
+                    throw new Error(
+                        'Enable the Pybricks Application Interface and Device Notification plot feature flags to use Hub Monitor.',
+                    );
+                }
+            
             }
             if (!client.hubType?.capabilities.repl) {
                 throw new Error('REPL is not supported by hub.');

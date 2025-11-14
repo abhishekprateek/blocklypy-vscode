@@ -100,6 +100,12 @@ class Config {
             );
             return flags ? !!flags[flag] : false;
         },
+        set: async (flag: FeatureFlags, value: boolean) => {
+            const flags =
+                this.read<{ [key: string]: boolean }>(ConfigKeys.FeatureFlags) || {};
+            flags[flag] = value;
+            await this.write(ConfigKeys.FeatureFlags, flags);
+        },
         toggle: async (flag: FeatureFlags, value?: boolean) => {
             const flags =
                 this.read<{ [key: string]: boolean }>(ConfigKeys.FeatureFlags) || {};
