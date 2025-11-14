@@ -48,7 +48,7 @@ export class MockClient extends BaseClient {
         return Promise.resolve();
     }
 
-    public async write(_data: Uint8Array, _withoutResponse: boolean = false) {
+    protected async write(_data: Uint8Array): Promise<void> {
         // NOOP
     }
 

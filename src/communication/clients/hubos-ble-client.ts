@@ -100,13 +100,14 @@ export class HubOSBleClient extends HubOSBaseClient {
         });
     }
 
-    public async write(data: Uint8Array, withoutResponse: boolean = true) {
+    protected async write(data: Uint8Array) {
         const packetSize = this.capabilities?.maxPacketSize ?? data.length;
         for (let loop = 0; loop < data.length; loop += packetSize) {
             const chunk = data.slice(loop, loop + packetSize);
             await this._rxCharacteristic?.writeAsync(
                 Buffer.from(chunk),
-                withoutResponse,
+                /* use without response (withoutResponse=true) */
+                true,
             );
         }
     }

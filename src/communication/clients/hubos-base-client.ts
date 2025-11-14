@@ -177,7 +177,7 @@ export abstract class HubOSBaseClient extends BaseClient {
             this._pendingMessagesPromises.set(resultTypeId, [resolve, reject]);
         });
 
-        await this.write(payload, true);
+        await this.write(payload);
 
         const [response, _] = await maybe(
             withTimeout<TResponse>(

@@ -313,8 +313,12 @@ export class PybricksBleClient extends BaseClient {
         });
     }
 
-    public async write(data: Uint8Array, withoutResponse: boolean = false) {
-        await this._rxtxCharacteristic?.writeAsync(Buffer.from(data), withoutResponse);
+    protected async write(data: Uint8Array) {
+        await this._rxtxCharacteristic?.writeAsync(
+            Buffer.from(data),
+            /* use with response (withoutResponse=false) */
+            false,
+        );
     }
 
     protected async handleIncomingData(data: Buffer): Promise<void> {
@@ -383,7 +387,7 @@ export class PybricksBleClient extends BaseClient {
         const data = encoder.encode(value);
 
         for (let i = 0; i < data.length; i += maxBleWriteSize) {
-            await this.write(createWriteStdinCommand(data.buffer), false);
+            await this.write(createWriteStdinCommand(data.buffer));
         }
     }
 
@@ -391,7 +395,7 @@ export class PybricksBleClient extends BaseClient {
         if (!this.connected) throw new Error('Not connected to a device');
         if (!this._capabilities?.maxWriteSize) return;
 
-        await this.write(createWriteAppDataCommand(0, data), false);
+        await this.write(createWriteAppDataCommand(0, data));
     }
 
     public override async updateDeviceNotifications(): Promise<void> {
@@ -406,18 +410,15 @@ export class PybricksBleClient extends BaseClient {
     ) {
         if (typeof slot === 'number' || slot === undefined) {
             // slot is not supported on pybricks, always 0
-            await this.write(createStartUserProgramCommand(slot ?? 0), false);
+            await this.write(createStartUserProgramCommand(slot ?? 0));
         } else if (slot === StartMode.REPL) {
-            await this.write(
-                createStartUserProgramCommand(BuiltinProgramId.REPL),
-                false,
-            );
+            await this.write(createStartUserProgramCommand(BuiltinProgramId.REPL));
             if (replContent) await this.sendCodeToRepl(replContent);
         }
     }
 
     public override async action_stop() {
-        await this.write(createStopUserProgramCommand(), false);
+        await this.write(createStopUserProgramCommand());
     }
 
     public override async action_upload(
@@ -442,8 +443,8 @@ export class PybricksBleClient extends BaseClient {
         // Pybricks Code sends size 0 to clear the state before sending the new program, then sends the size on completion.
         setState(StateProp.Uploading, true);
         try {
-            await this.write(createWriteUserProgramMetaCommand(0), false);
-            await this.write(createWriteUserProgramMetaCommand(data.byteLength), false);
+            await this.write(createWriteUserProgramMetaCommand(0));
+            await this.write(createWriteUserProgramMetaCommand(data.byteLength));
 
             const writeSize = this._capabilities.maxWriteSize - 5; // 5 bytes for the header
             const incrementPct = 100 / (data.byteLength / writeSize);
@@ -451,7 +452,7 @@ export class PybricksBleClient extends BaseClient {
                 const chunk = data.slice(offset, offset + writeSize);
                 const chunkBuffer = chunk.buffer;
                 const buffer = createWriteUserRamCommand(offset, chunkBuffer);
-                await this.write(buffer, false);
+                await this.write(buffer);
 
                 if (progressCb) progressCb(incrementPct);
 

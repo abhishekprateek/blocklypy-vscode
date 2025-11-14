@@ -40,7 +40,7 @@ export class HubOSUsbClient extends HubOSBaseClient {
         this._serialPort = port;
     }
 
-    public async write(data: Uint8Array): Promise<void> {
+    protected async write(data: Uint8Array): Promise<void> {
         if (!this.connected || !this.metadata) return; // before connecting use serial.write directly for getName
 
         this._serialPort?.write(data);

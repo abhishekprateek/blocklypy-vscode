@@ -98,7 +98,7 @@ export abstract class BaseClient {
         return true;
     }
 
-    public abstract write(data: Uint8Array, withoutResponse: boolean): Promise<void>;
+    protected abstract write(data: Uint8Array): Promise<void>;
 
     public async updateDeviceNotifications(): Promise<void> {
         // NOOP
@@ -139,6 +139,8 @@ export abstract class BaseClient {
 
             await this.connectWorker(onDeviceUpdated, onFinalizing);
 
+            if (!this.connected) throw new Error('Failed to connect to device');
+
             if (!this.name) throw new Error('Failed to get device name');
 
             logDebug(`✅ Connected to ${this.description}`);
@@ -146,6 +148,7 @@ export abstract class BaseClient {
             // intentional no await
             void Config.set(ConfigKeys.DeviceLastConnectedName, this.id);
         } catch (error) {
+            logDebug(`❌ Failed to connect to device`);
             await this.disconnect();
             this._metadata = undefined;
             throw error;
