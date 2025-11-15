@@ -642,6 +642,16 @@ export class PybricksTunnelDebugSession extends LoggingDebugSession {
                     args.expression + '\r\n',
                 );
                 break;
+            // case 'watch':
+            // case 'hover':
+            // default:
+            //     const result = this._runtime.evaluate(args.expression);
+            //     //!! console.debug(`Evaluate: ${args.expression} = ${String(result)}`);
+            //     // response.body = {
+            //     //     result: this.convertFromRuntime(result),
+            //     //     variablesReference: 0,
+            //     // };
+            //     break;
         }
 
         this.sendResponse(response);

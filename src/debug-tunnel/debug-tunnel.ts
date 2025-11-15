@@ -152,6 +152,16 @@ class DebugTunnel {
         //TODO: await response and check for ack or error
     }
 
+    // public static async performEval(expression: string) {
+    //     if (!this._state_isTrapped) return;
+    //     await this.sendToHub({
+    //         Id: MessageType.DebugAcknowledge,
+    //         subcode: DebugSubCode.EvaluateRequest,
+    //         corrid: 1, // TODO: implement correlation ID management
+    //         expression,
+    //     });
+    // }
+
     public static canStartSession(): boolean {
         return hasState(StateProp.Connected) === true;
     }

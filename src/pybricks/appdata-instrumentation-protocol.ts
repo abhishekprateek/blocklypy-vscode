@@ -35,8 +35,8 @@ export enum DebugSubCode {
     TrapNotification = 0x03,
     ContinueRequest = 0x04,
     ContinueResponse = 0x05,
-    GetVariableRequest = 0x06 /* not used */,
-    GetVariableResponse = 0x07 /* not used */,
+    // EvaluateRequest = 0x06,
+    // EvaluateResponse = 0x07,
     SetVariableRequest = 0x08,
     SetVariableResponse = 0x09,
     TerminateRequest = 0x0a,
@@ -101,18 +101,19 @@ export type DebugMessage =
           subcode: DebugSubCode.ContinueResponse;
           step: boolean;
       }
-    | {
-          Id: MessageType.DebugAcknowledge;
-          subcode: DebugSubCode.GetVariableRequest;
-          varname: string;
-      }
-    | {
-          Id: MessageType.DebugNotification;
-          subcode: DebugSubCode.GetVariableResponse;
-          varname: string;
-          //   type: DebugVarTypeEnum;
-          value: DebugVarType;
-      }
+    // | {
+    //       Id: MessageType.DebugAcknowledge;
+    //       subcode: DebugSubCode.EvaluateRequest;
+    //       corrid: number;
+    //       expression: string;
+    //   }
+    // | {
+    //       Id: MessageType.DebugNotification;
+    //       subcode: DebugSubCode.EvaluateResponse;
+    //       corrid: number;
+    //       //   type: DebugVarTypeEnum;
+    //       value: DebugVarType;
+    //   }
     | {
           Id: MessageType.DebugAcknowledge;
           subcode: DebugSubCode.SetVariableRequest;
@@ -236,21 +237,22 @@ function encodeDebugMessageRaw(data: DebugMessage): Uint8Array {
             }
             break;
 
-        case DebugSubCode.GetVariableResponse:
-            // varname: zstring, type: uint8, value: depends on type
-            dataview.writeString(data.varname);
-            encodeValue(data.value, dataview);
-            break;
+        // case DebugSubCode.EvaluateRequest:
+        //     // corrid: uint16, expression: zstring
+        //     dataview.writeUInt8(data.corrid);
+        //     dataview.writeString(data.expression);
+        //     break;
 
         case DebugSubCode.SetVariableResponse:
             // success: boolean
             dataview.writeBool(data.success);
             break;
 
-        case DebugSubCode.GetVariableRequest:
-            // varname: zstring
-            dataview.writeString(data.varname);
-            break;
+        // case DebugSubCode.EvaluateResponse:
+        //     // corrid: uint16, type: uint8, value: depends on type
+        //     dataview.writeUInt8(data.corrid);
+        //     encodeValue(data.value, dataview);
+        //     break;
 
         case DebugSubCode.SetVariableRequest:
             // varname: zstring, type: uint8, value: depends on type
@@ -364,23 +366,24 @@ function decodeDebugMessageRaw(data: Uint8Array): DebugMessage {
                 subcode: DebugSubCode.ContinueResponse,
                 step: dataview.readBool(),
             };
-        case DebugSubCode.GetVariableRequest:
-            return {
-                Id: MessageType.DebugAcknowledge,
-                subcode: DebugSubCode.GetVariableRequest,
-                varname: dataview.readString(),
-            };
-        case DebugSubCode.GetVariableResponse: {
-            const varname = dataview.readString();
-            let { value } = decodeValue(dataview);
-            return {
-                Id: MessageType.DebugNotification,
-                subcode: DebugSubCode.GetVariableResponse,
-                varname,
-                // type,
-                value,
-            };
-        }
+        // case DebugSubCode.EvaluateRequest:
+        //     return {
+        //         Id: MessageType.DebugAcknowledge,
+        //         subcode: DebugSubCode.EvaluateRequest,
+        //         expression: dataview.readString(),
+        //         corrid: dataview.readUInt8(),
+        //     };
+        // case DebugSubCode.EvaluateResponse: {
+        //     const corrid = dataview.readUInt8();
+        //     let { value } = decodeValue(dataview);
+        //     return {
+        //         Id: MessageType.DebugNotification,
+        //         subcode: DebugSubCode.EvaluateResponse,
+        //         corrid,
+        //         // type,
+        //         value,
+        //     };
+        // }
         case DebugSubCode.SetVariableRequest: {
             const varname = dataview.readString();
             let { value } = decodeValue(dataview);

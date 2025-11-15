@@ -298,7 +298,7 @@ export class PybricksTunnelDebugRuntime extends EventEmitter {
                     }
                     this.sendEvent('stopOnBreakpoint');
                 }
-                
+
                 if (this.canStopOnLocation(this._sourceFile, this.currentLine)) {
                     this.sendEvent('stopOnBreakpoint');
                 } else {
@@ -402,4 +402,11 @@ export class PybricksTunnelDebugRuntime extends EventEmitter {
             return path.replace(/\\/g, '/');
         }
     }
+
+    // public evaluate(expression: string): IRuntimeVariableType {
+    //     // async ??
+    //     void DebugTunnel.performEval(expression);
+
+    //     return null;
+    // }
 }

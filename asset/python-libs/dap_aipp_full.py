@@ -123,8 +123,8 @@ _DEBUG_TRAP_ACK = const(0x02)
 _DEBUG_TRAP_NOTIF = const(0x03)
 _DEBUG_CONTINUE_REQ = const(0x04)
 _DEBUG_CONTINUE_RESP = const(0x05)
-_DEBUG_GETVAR_REQ = const(0x06)
-_DEBUG_GETVAR_RESP = const(0x07)
+# _DEBUG_EVAL_REQ = const(0x06)
+# _DEBUG_EVAL_RESP = const(0x07)
 _DEBUG_SETVAR_REQ = const(0x08)
 _DEBUG_SETVAR_RESP = const(0x09)
 _DEBUG_TERM_REQ = const(0x0a)
@@ -235,6 +235,27 @@ def decode_message_raw(data: list[bytes]):
 #     return bytes(parts)
 
 
+# def encode_debug_value(v) -> tuple:  # tuple(int, bytes)
+#     if isinstance(v, int):
+#         vartype = _VAR_INT
+#         data = pack('<i', v)
+#     elif isinstance(v, float):
+#         vartype = _VAR_FLOAT
+#         data = pack('<f', v)
+#     elif isinstance(v, str):
+#         vartype = _VAR_STRING
+#         data = encode_zstring(v)
+#     elif isinstance(v, bool):
+#         vartype = _VAR_BOOL
+#         data = bytes([1 if v else 0])
+#     elif v is None:
+#         vartype = _VAR_NONE
+#         data = b''
+#     else:  # v is some format we do not want to handle
+#         vartype = None
+#         data = b''
+#     return vartype, data
+    
 def encode_debug_message_raw(message) -> bytes:
     """
     Encodes a debug message from pc to hub/me.
@@ -258,7 +279,6 @@ def encode_debug_message_raw(message) -> bytes:
         for i in range(len(exposed_keys)):
             exposed_var = exposed_keys[i]
             v = exposed_values[i]
-            # parts.append(vartype)
             if isinstance(v, int):
                 vartype = _VAR_INT
                 data = pack('<i', v)
@@ -276,6 +296,9 @@ def encode_debug_message_raw(message) -> bytes:
                 data = b''
             else:  # v is some format we do not want to handle
                 continue
+            # vartype, data = encode_debug_value(v)
+            # if vartype is None:
+            #     continue
             parts[counter_position] += 1
             parts += encode_zstring(exposed_var)
             parts.append(vartype)
@@ -283,14 +306,14 @@ def encode_debug_message_raw(message) -> bytes:
             if parts[counter_position] >= _MAX_COUNT_VALUES:  # max 256 variables
                 break
 
-    # elif subcode == DEBUG_GETVAR_RESP:
+    # elif subcode == _DEBUG_EVAL_RESP:
     #     # get variable response: name, varvalue
-    #     name, varvalue = rest
-    #     pytype = type(varvalue)
-    #     vartype, encoder = VARIABLE_TYPE_MAP[pytype]
-    #     parts += encode_zstring(name)
-    #     parts.append(vartype)
-    #     parts += encoder(varvalue)
+    #     corrid, varvalue = rest
+    #     vartype, data = encode_debug_value(varvalue)
+    #     if not vartype is None:
+    #         parts.append(corrid)
+    #         parts.append(vartype)
+    #         parts += data
 
     elif subcode == _DEBUG_SETVAR_RESP:
         # set variable response: error message
@@ -323,10 +346,11 @@ def decode_debug_message_raw(data: list[bytes]):
         # trap ack: continue/exit_debug
         step = rest[0] != 0
         return (subcode, step)
-    # elif subcode == DEBUG_GETVAR_REQ:
-    #     # get variable request: name
-    #     name, _ = decode_zstring(rest, 0)
-    #     return (subcode, name)
+    # elif subcode == _DEBUG_EVAL_REQ:
+    #     # get evaluate request: corrid, expression
+    #     corrid = rest[0]
+    #     expr, _ = decode_zstring(rest, 1)
+    #     return (subcode, corrid, expr)
     elif subcode == _DEBUG_SETVAR_REQ:
         # set variable request: name, vartype, varvalue
         name, index = decode_zstring(rest, 0)
@@ -586,6 +610,24 @@ def dt_trap(file: str, lineno: int, exposed_keys: tuple, exposed_values: list):
             send_tunnel_aipp(encode_debug_message_raw(
                 [_DEBUG_SETVAR_RESP, result]))
             # continue the trap loop
+            
+        # elif subcode == _DEBUG_EVAL_REQ:
+        #     corrid, expression = response[1:3]
+        #     result = None
+        #     try:
+        #         # evaluate in the context of exposed variables
+        #         local_context = {}
+        #         for i in range(len(exposed_keys)):
+        #             local_context[exposed_keys[i]] = exposed_values[i]
+        #         result = eval(expression, globals(), local_context)
+        #         print("Evaluated expression:", expression, "->", result)  # !!
+        #     except Exception as e:
+        #         print("Evaluation failed:", expression, "->", e)  # !!
+        #         result = None  # evaluation failed
+
+        #     send_tunnel_aipp(encode_debug_message_raw(
+        #         [_DEBUG_EVAL_RESP, corrid, result]))
+        #     # continue the trap loop
 
         elif subcode == _DEBUG_TERM_REQ:
             # nothing to send
