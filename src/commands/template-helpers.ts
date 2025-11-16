@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import path from 'path';
 import { showError } from '../extension/diagnostics';
+import { ensurePybricksOnce } from '../extension/pip-check';
 import { selectHubTemplate } from '../pybricks/autodetect/template-creation';
 
 /**
@@ -99,4 +100,7 @@ export async function createPybricksFile(): Promise<void> {
     await vscode.window.showTextDocument(newFile);
 
     await insertPybricksTemplate();
+
+    // trigger one-time pybricks install prompt
+    await ensurePybricksOnce();
 }

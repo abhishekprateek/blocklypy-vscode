@@ -1,9 +1,13 @@
 import * as vscode from 'vscode';
+import { ensurePybricksOnce } from '../extension/pip-check';
 
 let pybricksHelpPanel: vscode.WebviewPanel | undefined;
 
 export async function openHelpPortal() {
     try {
+        // Trigger one-time Pybricks install/upgrade prompt when user opens help portal
+        await ensurePybricksOnce();
+
         const helpUris = ['https://docs.pybricks.com/en/latest'];
         const editor = vscode.window.activeTextEditor;
         if (editor?.document.languageId !== 'python') return;

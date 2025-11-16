@@ -1577,6 +1577,12 @@ flowchart LR
 
 ---
 
-_This architecture document provides a comprehensive overview of the BlocklyPy
-Commander extension. For specific implementation details, refer to the source
-code and inline documentation._
+## Pybricks Pip Package Installation Prompt
+
+A consent-based workflow guides users to install or upgrade the 'pybricks' pip package:
+
+- Trigger: First invocation of Create Pybricks File command.
+- Check: Uses Python extension API to resolve active interpreter and attempts an import.
+- Prompt: Modal information message with Install/Upgrade/Skip.
+- Execution: Opens a dedicated terminal and runs: "<pythonPath>" -m pip install --upgrade pybricks.
+- Persistence: Global state flag (pybricksInstallPromptShown) prevents repeat prompts unless user resets global state manually.

@@ -14,6 +14,7 @@ export const enum ConfigKeys {
     DeviceNotificationPlotFilter = 'device-notification-plot-filter',
     StopScanOnBlur = 'stop-scan-on-blur',
     IdleDisconnectTimeoutSec = 'idle-disconnect-timeout',
+    DisablePybricksPrompt = 'disable-pybricks-prompt',
 
     // Nested object for feature flags
     FeatureFlags = 'feature-flags',

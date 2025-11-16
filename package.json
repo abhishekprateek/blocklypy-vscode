@@ -297,6 +297,12 @@
         "title": "Open Pybricks Help Portal",
         "category": "BlocklyPy Commander",
         "icon": "$(book)"
+      },
+      {
+        "command": "blocklypy-vscode.installPybricksPackage",
+        "title": "Install Pybricks Pip Package",
+        "category": "BlocklyPy Commander",
+        "icon": "$(package)"
       }
     ],
     "viewsContainers": {
@@ -742,7 +748,7 @@
           {
             "id": "createProgram",
             "title": "Create or Open a Python Program",
-            "description": "Create a new Python file or open an existing LEGO program file (.llsp3, .lms, etc.) to start programming your robot.\n[Create New Python File](command:blocklypy-vscode.createPybricksFile)\n[Open Python or LEGO File](command:workbench.action.files.openFile)",
+            "description": "Create a new Python file or open an existing LEGO program file (.llsp3, .lms, etc.) to start programming your robot.\n[Create New Python File](command:blocklypy-vscode.createPybricksFile)\n[Open Python or LEGO File](command:workbench.action.files.openFile)\n\nOptional: enable Pybricks autocomplete for your code\n[Install Pybricks Package](command:blocklypy-vscode.installPybricksPackage)\n\n",
             "media": {
               "markdown": "docs/walkthrough/step2-program.md"
             },

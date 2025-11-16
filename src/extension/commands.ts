@@ -28,6 +28,7 @@ import { PythonPreviewProvider } from '../views/PythonPreviewProvider';
 import Config, { ConfigKeys, FeatureFlags } from './config';
 import { logDebug } from './debug-channel';
 import { showInfo, showWarning } from './diagnostics';
+import { promptInstallPybricks } from './pip-check';
 import { RefreshTree } from './tree-commands';
 import { openOrActivate as openOrActivateAsync, wrapErrorHandling } from './utils';
 
@@ -66,6 +67,7 @@ export enum Commands {
     InsertPybricksTemplate = EXTENSION_KEY + '.insertPybricksTemplate',
     CreatePybricksFile = EXTENSION_KEY + '.createPybricksFile',
     OpenHelpPortal = EXTENSION_KEY + '.openHelpPortal',
+    InstallPybricksPackage = EXTENSION_KEY + '.installPybricksPackage',
     // StartJupyter = EXTENSION_KEY + '.startJupyter',
 }
 
@@ -319,7 +321,6 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
                         'Enable the Pybricks Application Interface and Device Notification plot feature flags to use Hub Monitor.',
                     );
                 }
-            
             }
             if (!client.hubType?.capabilities.repl) {
                 throw new Error('REPL is not supported by hub.');
@@ -353,6 +354,12 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
         command: Commands.CreatePybricksFile,
         handler: async () => {
             await createPybricksFile();
+        },
+    },
+    {
+        command: Commands.InstallPybricksPackage,
+        handler: async () => {
+            await promptInstallPybricks();
         },
     },
 ];

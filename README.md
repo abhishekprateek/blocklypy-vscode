@@ -134,6 +134,25 @@ backup, and code inspection.
 4.  **Run Your Code:** Press `F5` or use the dedicated Run button in the VS Code
     interface to deploy and execute your program on the connected hub.
 
+## 📦 Pybricks Pip Package
+
+The extension can optionally help you install or upgrade the `pybricks` pip
+package in your currently selected Python environment.
+
+- **Automatic Prompt:** The first time you open the Pybricks Help Portal
+  (`Open Pybricks Help Portal` command), the extension checks whether the
+  `pybricks` package can be imported. If it is missing, you will be prompted to
+  install it. If it is present, you may choose to upgrade.
+- **Manual Install/Upgrade:** Use the `Install Pybricks Pip Package` command at
+  any time from the Command Palette or the Commands tree view.
+- **One-Time Behavior:** After the prompt is shown once (or if the package is
+  already installed), it will not appear again unless you manually invoke the
+  install command.
+
+> Tip: Ensure the correct Python interpreter is selected (status bar or
+> VS Code Python: Select Interpreter) before installing so that the `pybricks`
+> package ends up in the environment you use for development.
+
 ## 🌟 Guide: Fun First Things to Explore
 
 - **Connect** to a SPIKE Prime/Essential/Robot Inventor hub running Pybricks or
