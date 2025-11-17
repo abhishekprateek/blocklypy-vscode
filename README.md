@@ -225,6 +225,32 @@ standard output of the connected device.
   represent missing values.
 - `plot: end` - Terminates the current plotting session.
 
+**Plotting Columns Definitions:**
+
+To define a plotting column, use the format:
+
+```
+column_name [axis:<type>] [range:min..max]
+```
+
+- `column_name`: The label for your data column (e.g., `yaw`, `pitch`, `roll`).
+- `axis:<type>`: (Optional) Specify the axis name, any series sharing an axis will have a common scale.  
+  If a single axis series uses `x`, it will replace the default server-side timestamp x-scale.  
+  If a single axis series uses `x[time]`, it will replace the default server-side timestamp x-scale using a second-based time-axis.
+- `range:min..max`: (Optional) Define the expected value range.
+
+**Example:**
+
+```
+time axis:x[time], gyro range:0..100 axis:yaw, pitch axis:pitchroll, roll axis:pitchroll
+```
+
+This defines:
+- `time` as the x-axis (time),
+- `gyro` as an orientation axis with values from 0 to 100,
+- `pitch` and `roll` as additional orientation axes.
+
+
 **How it Works:**
 
 - The extension continuously monitors lines beginning with "plot:".

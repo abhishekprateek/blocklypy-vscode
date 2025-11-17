@@ -9,7 +9,7 @@ import { RingBuffer } from './ring-buffer';
 export const BUFFER_FLUSH_TIMEOUT_MS = 1 * MILLISECONDS_IN_SECOND; // ms
 const PLOT_MAX_ROWS = 10000;
 
-type PlotStartEvent = { columns: string[]; rows: number[][] | undefined };
+type PlotStartEvent = { columns: string[]; rows: number[][] };
 type PlotDataEvent = number[];
 // type PlotBarUpdateEvent = number[];
 

@@ -789,6 +789,15 @@ flowchart LR
 - `plot: value1,value2,...` - Positional values
 - `plot: end` - Terminate session
 
+**Plot Column Definitions for `start`:**
+
+Plot columns can include a number of options that modify rendering.
+
+```plain
+column_name [axis:<type>|x[time]] [range:min..max]
+```
+
+
 ---
 
 ## Extension Lifecycle

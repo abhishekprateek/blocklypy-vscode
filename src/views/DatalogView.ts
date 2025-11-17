@@ -93,7 +93,11 @@ export class DatalogView implements vscode.WebviewViewProvider, vscode.Disposabl
         }, 100);
     }
 
-    public async setHeaders(cols: string[], rows?: number[][]) {
+    public async setHeaders(
+        cols: string[],
+        rows: number[][],
+        chartType?: ChartType | null,
+    ) {
         await setContextPlotDataAvailability(true);
 
         if (cols.length > 1) await focusChartView();
@@ -102,6 +106,7 @@ export class DatalogView implements vscode.WebviewViewProvider, vscode.Disposabl
             command: 'setHeaders',
             cols,
             rows,
+            chartType,
         });
     }
 
@@ -116,11 +121,8 @@ export class DatalogView implements vscode.WebviewViewProvider, vscode.Disposabl
      * Set the chart type (line or bar)
      * @param value The chart type to set. If null, toggles between line and bar.
      */
-    public async setChartType(value: ChartType | null) {
-        await this.currentWebviewView?.webview.postMessage({
-            command: 'setChartType',
-            type: value,
-        });
+    public async setChartType(ctype: ChartType | null) {
+        await this.setHeaders(plotManager.datalogcolumns, plotManager.data, ctype);
     }
 
     private getHtmlForWebview(

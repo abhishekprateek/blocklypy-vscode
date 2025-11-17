@@ -1,6 +1,22 @@
 import { Axis, default as uPlot } from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
+// TODOs:
+// - black grid for bar
+// - switching between line/bar - error if there is an x axis...
+// - check why x triggers time scale
+
+
+interface SeriesDefinition {
+    name: string;
+    axis?: string;
+    axisOptions?: {
+        time?: boolean
+        };
+    color: string;
+    range?: [number, number];
+}
+
 const MAX_DATA_POINTS = 200; // max points to keep in chart
 
 const COLORS = [
@@ -16,6 +32,8 @@ const COLORS = [
     '#CCA300', // 9: dark sand
 ];
 
+const AXIS_STROKE_COLOR = '#7779';
+
 const enum ChartType {
     Line = 'line',
     Bar = 'bar',
@@ -25,7 +43,8 @@ const DEFAULT_PRECISION = 1;
 
 let chart: uPlot | undefined;
 let chartDataByCols: number[][] = [];
-let chartSeries: string[] = [];
+let chartSeries: SeriesDefinition[] = [];
+let xAxisColumnIndex: number = 0;
 let _latestDataRow: number[] = [];
 let chartMode = ChartType.Line;
 
@@ -34,33 +53,35 @@ let chartMode = ChartType.Line;
 import { sanitizeHtml } from './webviewUtils';
 
 type DatalogWebviewMessage =
-    | { command: 'setHeaders'; cols: string[]; rows?: number[][] }
-    | { command: 'addData'; row: number[] }
-    | { command: 'setChartType'; type: ChartType };
+    | { command: 'setHeaders'; cols: string[]; rows: number[][]; chartType: ChartType }
+    | { command: 'addData'; row: number[] };
 
 window.addEventListener('message', (event: MessageEvent) => {
     const data = event.data as DatalogWebviewMessage;
     if (data.command === 'setHeaders') {
-        const { cols, rows } = data;
-        setHeaders(cols, rows);
+        const { cols, rows, chartType: ctype_in } = data;
+        const sdefs = parseSeriesDefinitions(cols);
+        let ctype_new: ChartType = chartMode;
+        switch (ctype_in) {
+            case undefined:
+                // keep current mode
+                break;
+            case null:
+                // Toggle mode
+                ctype_new =
+                    chartMode === ChartType.Line ? ChartType.Bar : ChartType.Line;
+                break;
+            case ChartType.Line:
+            case ChartType.Bar:
+                // Set to specified mode
+                ctype_new = ctype_in;
+                break;
+        }
+
+        setHeaders(sdefs, rows, ctype_new);
     } else if (data.command === 'addData') {
         const { row } = data;
         addData(row);
-    } else if (data.command === 'setChartType') {
-        if (!data.type) {
-            // Toggle mode
-            chartMode = chartMode === ChartType.Line ? ChartType.Bar : ChartType.Line;
-        } else {
-            // Set to specified mode
-            chartMode = data.type;
-        }
-
-        // Re-render the chart with the current data and new mode
-        setHeaders(
-            chartSeries,
-            chartDataByCols.map((col) => Array.from(col)),
-            _latestDataRow,
-        );
     }
 });
 
@@ -93,24 +114,94 @@ function setVisibility(hasData: boolean) {
     container.style.display = hasData ? 'block' : 'none';
 }
 
+function parseSeriesDefinitions(columns: string[]): SeriesDefinition[] {
+    // example: "time axis:x[time], gyro range:0..100 axis:orientation, tilt1 axis:orientation, tilt2 axis:orientation"
+    return columns.map((name, index) => {
+        const parts = name.split(' ').map((part) => part.trim());
+        const def: SeriesDefinition = {
+            name: parts[0],
+            axis: index === 0 ? undefined : `num${index}`,
+            color: COLORS[index % COLORS.length],
+        };
+        for (let i = 1; i < parts.length; i++) {
+            const partkv = parts[i].split(':');
+            if (partkv.length !== 2) continue;
+            switch (partkv[0]) {
+                case 'axis': {
+                    def.axis = partkv[1];
+
+                    // special handling for 'x[time]'
+                    if (def.axis === 'x[time]') {
+                        def.axis = 'x';
+                        def.axisOptions = { time: true };
+                    }
+                    break;
+                }
+                case 'range':
+                    const rangeStr = partkv[1];
+                    const match = rangeStr.match(
+                        /^(-?\d+(?:\.\d+)?)\.\.(-?\d+(?:\.\d+)?)/,
+                    );
+                    if (match) {
+                        def.range = [parseFloat(match[1]), parseFloat(match[2])];
+                    }
+                    break;
+            }
+        }
+        return def;
+    });
+}
+
+function filterArray<T>(arr: T[], indexToMoveFront: number): T[] {
+    if (indexToMoveFront <= 0) {
+        return arr;
+    } else {
+        // Move the specified index to the front, remove 0th index (timestamp)
+        return [
+            arr[indexToMoveFront],
+            ...arr.filter((_, idx) => idx !== indexToMoveFront && idx !== 0),
+        ];
+    }
+}
+
 function setHeaders(
-    names: string[],
-    dataByRows: number[][] = [],
-    latest: number[] = [],
+    series_in: SeriesDefinition[],
+    dataByRows_in: number[][],
+    chartType_in: ChartType,
 ) {
-    chartSeries = names; // first is x-axis
+    chartMode = chartType_in;
+
+    // ignore first (mandatory/auto appended) timestamp
+    // ignore any series having an axis 'x' (should be 0 or 1, but just in case)
+    xAxisColumnIndex = series_in.findIndex((s) => s.axis === 'x');
+    if (xAxisColumnIndex < 0) xAxisColumnIndex = 0;
+
+    chartSeries = filterArray(series_in, xAxisColumnIndex);
+    const dataSeriesNames = chartSeries.slice(1); // exclude timestamp/x-axis
+
+    // collect unique axes, for definition use the first series found for each axis
+    const scales = Object.values(
+        chartSeries.reduce<Record<string, SeriesDefinition>>((acc, s) => {
+            if (s.axis !== undefined && !acc[s.axis]) acc[s.axis] = s;
+            return acc;
+        }, {}),
+    );
 
     // transpose dataByRows to dataByCols
-    if (dataByRows.length > 0 && dataByRows[0].length === names.length) {
-        chartDataByCols = names.map((_, colIdx) =>
-            dataByRows.map((row) => row[colIdx]),
+    if (dataByRows_in.length > 0 && dataByRows_in[0].length === series_in.length) {
+        // reshuffle series - by xAxisColumnIndices - use first one and move to "0" index, and skip all others
+        // Move the first x-axis column to index 0
+        dataByRows_in = filterArray(dataByRows_in, xAxisColumnIndex);
+        chartDataByCols = series_in.map((_, colIdx) =>
+            dataByRows_in.map((row) => row[colIdx]),
         );
+        _latestDataRow = dataByRows_in[dataByRows_in.length - 1];
     } else {
-        chartDataByCols = Array.from({ length: names.length }, () => []);
+        chartDataByCols = Array.from(
+            { length: series_in.length - (xAxisColumnIndex > 0 ? 1 : 0) },
+            () => [],
+        );
     }
-    _latestDataRow = latest;
-
-    const dataSeriesNames = names.slice(1);
 
     const container = document.getElementById('chart-container');
     if (!container) return;
@@ -156,65 +247,71 @@ function setHeaders(
             {
                 scale: 'x',
                 side: Axis.Side.Bottom,
-                stroke: '#7779',
+                stroke: AXIS_STROKE_COLOR,
                 grid: {
                     show: true,
-                    stroke: '#7776',
+                    stroke: AXIS_STROKE_COLOR,
                     dash: [],
                     width: 2,
                 },
-                ticks: { show: true, stroke: '#7776' },
+                ticks: { show: true, stroke: AXIS_STROKE_COLOR },
                 gap: 0,
                 size: 25,
                 labelSize: 12,
             },
-            ...dataSeriesNames.map((name, idx) => ({
-                label: sanitizeHtml(name),
-                scale: `num${idx}`,
+            ...dataSeriesNames.map((serie) => ({
+                label: sanitizeHtml(serie.name),
+                scale: serie.axis,
                 side: Axis.Side.Left,
-                stroke: COLORS[idx % COLORS.length],
+                stroke: serie.color,
                 gap: 0,
                 size: 30,
                 grid: {
                     show: true,
-                    stroke: '#7776',
+                    stroke: AXIS_STROKE_COLOR,
                     dash: [2, 5],
                     width: 1,
                 },
-                ticks: { show: true, stroke: '#7776' },
+                ticks: { show: true, stroke: AXIS_STROKE_COLOR },
                 labelSize: 12,
             })),
         ];
         const opts: uPlot.Options = {
             legend: { show: true },
             ...getSize(),
-            padding: [null, 0, null, 0],
+            padding: [0, 0, 0, 0],
+            pxAlign: false,
             series: [
                 // x-axis
                 {
                     scale: 'x',
-                    label: sanitizeHtml(names[0]),
+                    label: 'x',
                     width: 2,
-                    stroke: '#7774',
+                    stroke: AXIS_STROKE_COLOR,
+                    pxAlign: false,
                 },
                 // y-axes
-                ...dataSeriesNames.map((name, idx) => ({
-                    scale: `num${idx}`,
-                    label: sanitizeHtml(name),
+                ...dataSeriesNames.map((serie) => ({
+                    label: sanitizeHtml(serie.name),
+                    scale: serie.axis,
                     width: 2,
-                    stroke: COLORS[idx % COLORS.length],
-                    fill: COLORS[idx % COLORS.length] + '22',
+                    stroke: serie.color,
+                    fill: serie.color + '22',
+                    pxAlign: false,
                 })),
             ],
             axes: axeOpts,
             scales: {
-                x: {
-                    time: false,
-                },
                 ...Object.fromEntries(
-                    dataSeriesNames.map((_, idx) => [
-                        `num${idx}`,
-                        { range: autoScaleFn },
+                    // dataSeriesNames.map((serie) => [
+                    scales.map((scale, index) => [
+                        // axis name
+                        scale.axis ?? `num${index}`,
+                        // axis options
+                        {
+                            range: index === 0 ? undefined : scale.range ?? autoScaleFn,
+                            time: scale.axisOptions?.time ?? false,
+                        },
                     ]),
                 ),
             },
@@ -233,7 +330,7 @@ function setHeaders(
     // Chart type is 'bar'
     else if (chartMode === ChartType.Bar) {
         // Prepare data for bar chart: x-axis will be indices, y-axis will be latest values
-        const barXLabels = dataSeriesNames; // These are the labels for the bars
+        const barXDefs = dataSeriesNames; // These are the labels for the bars
         const barData: number[][] = [];
         if (_latestDataRow.length > 0) {
             barData.push(Array.from({ length: dataSeriesNames.length }, (_, i) => i)); // X-axis: 0, 1, 2...
@@ -249,15 +346,30 @@ function setHeaders(
 
         // Initialize barChartPlugin to get the getRangeX function for scales
         const barPluginInstance = barChartPlugin({
-            xLabels: barXLabels,
-            colors: COLORS.slice(0, dataSeriesNames.length),
+            xLabels: barXDefs.map((def) => def.name),
+            colors: barXDefs.map((def) => def.color),
         });
 
         const barOpts: uPlot.Options = {
             legend: { show: false },
             ...getSize(),
             padding: [null, 0, null, 0],
-            series: [{}, {}],
+            series: [
+                {
+                    scale: 'x',
+                },
+                {},
+            ],
+            axes: [
+                {
+                    scale: 'x',
+                    side: Axis.Side.Bottom,
+                    stroke: AXIS_STROKE_COLOR,
+                    grid: {
+                        show: false,
+                    },
+                },
+            ],
             plugins: [barPluginInstance], // Use the plugin instance
         };
 
@@ -277,13 +389,14 @@ function addData(line: number[]) {
         setVisibility(false);
         return;
     }
-    _latestDataRow = line;
+    _latestDataRow = filterArray(line, xAxisColumnIndex);
 
     // Chart type is 'line'
     if (chartMode === ChartType.Line) {
-        chartSeries.forEach((_, index) => {
-            chartDataByCols[index].push(line[index]);
-        });
+        // if there are defined x-axis, move it to front, remove timestamp
+        for (let index = 0; index < chartSeries.length; index++) {
+            chartDataByCols[index].push(_latestDataRow[index]);
+        }
         // sliding window to keep max data points
         if (chartDataByCols[0].length > MAX_DATA_POINTS) {
             chartDataByCols.forEach((arr) =>
@@ -298,11 +411,12 @@ function addData(line: number[]) {
         const dataSeriesNames = chartSeries.slice(1);
         const barData: number[][] = [];
         if (_latestDataRow.length > 0) {
-            barData.push(dataSeriesNames.map((_, i) => i)); // X-axis for bars will be simply indices
-            barData.push(_latestDataRow.slice(1)); // Y-axis data for bars will be the latest values
+            barData.push(
+                dataSeriesNames.map((_, i) => i), // X-axis for bars will be simply indices
+                _latestDataRow.slice(1), // Y-axis data for bars will be the latest values (trimming the x-axis/timestamp)
+            );
         } else {
-            barData.push([]);
-            barData.push([]);
+            barData.push([], []);
         }
         chart.setData(barData.map((arr) => new Float64Array(arr)));
     }
@@ -452,6 +566,12 @@ function barChartPlugin({
                 time: false,
                 range: getRangeX,
                 distr: 2,
+                grid: {
+                    show: true,
+                    stroke: AXIS_STROKE_COLOR,
+                    dash: [],
+                    width: 2,
+                },
             });
 
             // Ensure opts.axes[0] is initialized and then assigned
