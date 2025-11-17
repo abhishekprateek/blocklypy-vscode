@@ -17,7 +17,6 @@ export async function getActivePythonPath(resource?: vscode.Uri): Promise<string
     try {
         const pyExt = vscode.extensions.getExtension('ms-python.python');
         if (!pyExt) return getFallbackPython();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const api = (
             pyExt.isActive ? pyExt.exports : await pyExt.activate()
         ) as PythonApi;
