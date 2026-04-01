@@ -328,9 +328,6 @@ export class PybricksBleClient extends BaseClient {
         switch (eventType) {
             case EventType.StatusReport:
                 {
-                    // process any pending stdout data first
-                    await this.processStdoutData();
-
                     // parse status report
                     const status = parseStatusReport(dataView);
                     if (status) {
@@ -344,6 +341,9 @@ export class PybricksBleClient extends BaseClient {
                             this._slot = undefined;
                         }
 
+                        if (!value) { // only flush incomplete lines when finished. during run the datalog gets confused
+                            await this.processStdoutData();
+                        }
                         setState(StateProp.Running, value);
                     }
                 }
