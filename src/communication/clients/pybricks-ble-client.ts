@@ -440,11 +440,11 @@ export class PybricksBleClient extends BaseClient {
             );
         }
 
-        // Pybricks Code sends size 0 to clear the state before sending the new program, then sends the size on completion.
+        // Same order as Pybricks Code: meta(0) begins receive, RAM chunks follow,
+        // then meta(size) completes (firmware sets FILE_IO_IN_PROGRESS until then).
         setState(StateProp.Uploading, true);
         try {
             await this.write(createWriteUserProgramMetaCommand(0));
-            await this.write(createWriteUserProgramMetaCommand(data.byteLength));
 
             const writeSize = this._capabilities.maxWriteSize - 5; // 5 bytes for the header
             const incrementPct = 100 / (data.byteLength / writeSize);
@@ -458,6 +458,8 @@ export class PybricksBleClient extends BaseClient {
 
                 await sleep(1); // let the hub finish processing the last chunk
             }
+
+            await this.write(createWriteUserProgramMetaCommand(data.byteLength));
         } catch (error) {
             setState(StateProp.Uploading, false);
             throw error;

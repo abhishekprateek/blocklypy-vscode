@@ -150,7 +150,8 @@ export function createLegacyStartReplCommand(): Uint8Array {
 
 /**
  * Creates a {@link CommandType.WriteUserProgramMeta} message.
- * @param size The size of the user program in bytes.
+ * @param size Use 0 to begin a download, then send all {@link CommandType.WriteUserRam}
+ * chunks, then send the final program size to complete (matches Pybricks Code and firmware).
  *
  * @since Pybricks Profile v1.2.0
  */
