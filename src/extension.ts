@@ -11,7 +11,7 @@ import { registerPybricksTunnelDebug } from './debug-tunnel/register';
 import { Commands, registerCommands } from './extension/commands';
 import Config, { ConfigKeys, FeatureFlags, registerConfig } from './extension/config';
 import { registerContextUtils } from './extension/context-utils';
-import { logDebug, registerDebugTerminal } from './extension/debug-channel';
+import { registerDebugTerminal } from './extension/debug-channel';
 import { clearPythonErrors } from './extension/diagnostics';
 import { registerCommandsTree } from './extension/tree-commands';
 import { wrapErrorHandling } from './extension/utils';
@@ -29,6 +29,7 @@ let lastAutostartTimestamp = 0;
 
 const AUTOSTART_DEBOUNCE_MS = 1 * MILLISECONDS_IN_SECOND;
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     extensionContext = context;
     isDevelopmentMode = context.extensionMode === vscode.ExtensionMode.Development;
@@ -76,7 +77,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     // listen to state changes and update contexts
     registerContextUtils(context);
     // context.subscriptions.push(registerDebugTerminal(sendDataToHubStdin));
-    await registerDebugTerminal(context);
+    registerDebugTerminal(context);
 
     // Activate pybricks-tunnel debugger
     registerDebugTunnel(context);
@@ -95,13 +96,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Register notebook controller for executing .ipynb cells on the device
     registerMicroPythonNotebookController(context);
-
-    logDebug(
-        '🚀 BlocklyPy Commander started up successfully.',
-        undefined,
-        undefined,
-        true,
-    );
 
     setTimeout(() => {
         void deferredActivations();

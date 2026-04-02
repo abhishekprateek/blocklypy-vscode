@@ -14,7 +14,6 @@ export class DebugTerminal implements vscode.Pseudoterminal {
             // create terminal
             this._instance = new DebugTerminal(extensionContext);
             this._instance.onUserInput = (input) => void onTerminalUserInput(input);
-            this._instance.show(true);
             this._instance.setCloseCallback(() => {
                 this._instance = undefined;
                 // handle terminal closed by user, any subsequent usage will reopen it
@@ -22,6 +21,7 @@ export class DebugTerminal implements vscode.Pseudoterminal {
         }
         return this._instance;
     }
+
     public static async WaitForReady() {
         // return this.instance !== undefined && !!this.instance.terminal?.processId;
         await this._instance?.terminal.processId;
@@ -70,6 +70,9 @@ export class DebugTerminal implements vscode.Pseudoterminal {
             }
         });
         this.context.subscriptions.push(onCloseDisp);
+
+        // First line when this terminal is created (no Terminal.show — avoids focusing on Python activation)
+        this.handleDataFromExtension('🚀 BlocklyPy Commander started up successfully.');
     }
 
     open(_initialDimensions: vscode.TerminalDimensions | undefined): void {
@@ -134,17 +137,12 @@ export class DebugTerminal implements vscode.Pseudoterminal {
     }
 }
 
-export async function registerDebugTerminal(context: vscode.ExtensionContext) {
-    // create terminal
-    // trigger to make sure terminal is created
-    const _ = DebugTerminal.Instance();
-    await DebugTerminal.WaitForReady();
-    // Terminal is ready to accept input
+/** Creates the BlocklyPy debug terminal if needed (e.g. when connecting to a hub). */
+export function ensureDebugTerminal(): DebugTerminal {
+    return DebugTerminal.Instance();
+}
 
-    // // register stdout helpers
-    // registerStdoutHelper();
-
-    // Return a disposable that closes the terminal when disposed
+export function registerDebugTerminal(context: vscode.ExtensionContext) {
     context.subscriptions.push({
         dispose: () => {
             if (DebugTerminal._instance) {
@@ -157,7 +155,10 @@ export async function registerDebugTerminal(context: vscode.ExtensionContext) {
 }
 
 export function clearDebugLog() {
-    DebugTerminal.Instance().handleDataFromHubOutput('\x1bc', false, false); // ANSI escape code to clear terminal
+    if (!DebugTerminal._instance) {
+        return;
+    }
+    DebugTerminal._instance.handleDataFromHubOutput('\x1bc', false, false); // ANSI escape code to clear terminal
 }
 
 export function logDebug(
@@ -174,11 +175,13 @@ export function logDebug(
                 'workbench.action.debug.selectDebugConsole',
             );
     } else {
-        const instance = DebugTerminal.Instance();
-        if (instance) {
-            if (show) DebugTerminal.Instance().show(true);
-            DebugTerminal.Instance().handleDataFromExtension(message);
+        if (!DebugTerminal._instance) {
+            return;
         }
+        if (show) {
+            DebugTerminal._instance.show(true);
+        }
+        DebugTerminal._instance.handleDataFromExtension(message);
     }
 }
 
@@ -201,7 +204,7 @@ export function logDebugFromHub(
             !linebreak,
         );
     } else {
-        DebugTerminal.Instance().handleDataFromHubOutput(
+        ensureDebugTerminal().handleDataFromHubOutput(
             message,
             isErrorOutput(message),
             linebreak,

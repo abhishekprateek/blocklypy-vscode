@@ -2,7 +2,11 @@ import * as vscode from 'vscode';
 
 import { DeviceMetadata } from '..';
 import Config, { ConfigKeys } from '../../extension/config';
-import { logDebug, logDebugFromHub } from '../../extension/debug-channel';
+import {
+    ensureDebugTerminal,
+    logDebug,
+    logDebugFromHub,
+} from '../../extension/debug-channel';
 import { clearPythonErrors } from '../../extension/diagnostics';
 import { handleStdOutDataHelpers } from '../../logic/stdout-helper';
 import { BaseLayer, LayerKind } from '../layers/base-layer';
@@ -143,12 +147,14 @@ export abstract class BaseClient {
 
             if (!this.name) throw new Error('Failed to get device name');
 
-            logDebug(`✅ Connected to ${this.description}`);
+            ensureDebugTerminal();
+            logDebug(`✅ Connected to ${this.description}`, undefined, undefined, true);
 
             // intentional no await
             void Config.set(ConfigKeys.DeviceLastConnectedName, this.id);
         } catch (error) {
-            logDebug(`❌ Failed to connect to device`);
+            ensureDebugTerminal();
+            logDebug(`❌ Failed to connect to device`, undefined, undefined, true);
             await this.disconnect();
             this._metadata = undefined;
             throw error;
