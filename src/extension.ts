@@ -115,15 +115,21 @@ async function deferredActivations(): Promise<void> {
     const isCloudRemote =
         vscode.env.remoteName === 'codespaces' ||
         vscode.env.uiKind === vscode.UIKind.Web;
+    console.log(`[BlocklyPy] deferredActivations: remoteName=${vscode.env.remoteName}, uiKind=${vscode.env.uiKind}, isCloudRemote=${isCloudRemote}`);
     let layerTypes: (typeof BaseLayer)[];
     if (isCloudRemote) {
+        console.log('[BlocklyPy] Loading WebBTBridgeLayer...');
         const { WebBTBridgeLayer } = await import('./communication/layers/web-bt-bridge-layer');
+        console.log('[BlocklyPy] WebBTBridgeLayer loaded successfully');
         layerTypes = [WebBTBridgeLayer];
     } else {
         layerTypes = [BLELayer, USBLayer];
     }
     //!! if (isDevelopmentMode) layerTypes.push(MockLayer);
-    await ConnectionManager.initialize(layerTypes).catch(console.error);
+    await ConnectionManager.initialize(layerTypes).catch((err) => {
+        console.error('[BlocklyPy] ConnectionManager.initialize failed:', err);
+    });
+    console.log('[BlocklyPy] deferredActivations complete');
 }
 
 export async function deactivate(): Promise<void> {
