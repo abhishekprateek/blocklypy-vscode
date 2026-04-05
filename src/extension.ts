@@ -5,7 +5,6 @@ import { ConnectionManager } from './communication/connection-manager';
 import { BaseLayer } from './communication/layers/base-layer';
 import { BLELayer } from './communication/layers/ble-layer';
 import { USBLayer } from './communication/layers/usb-layer';
-import { WebBTBridgeLayer } from './communication/layers/web-bt-bridge-layer';
 import { MILLISECONDS_IN_SECOND } from './const';
 import { registerDebugTunnel } from './debug-tunnel/debug-tunnel';
 import { registerPybricksTunnelDebug } from './debug-tunnel/register';
@@ -109,10 +108,15 @@ async function deferredActivations(): Promise<void> {
     // Finally, initialize the connection manager and auto-connect if needed
     // Use the Web Bluetooth Bridge layer when running in a browser (e.g. Codespaces),
     // where native noble BLE is unavailable.
-    const layerTypes: (typeof BaseLayer)[] =
-        vscode.env.uiKind === vscode.UIKind.Web
-            ? [WebBTBridgeLayer]
-            : [BLELayer, USBLayer];
+    // WebBTBridgeLayer is imported dynamically to avoid pulling in `ws` (which is
+    // a webpack external) on platforms where node_modules is not shipped.
+    let layerTypes: (typeof BaseLayer)[];
+    if (vscode.env.uiKind === vscode.UIKind.Web) {
+        const { WebBTBridgeLayer } = await import('./communication/layers/web-bt-bridge-layer');
+        layerTypes = [WebBTBridgeLayer];
+    } else {
+        layerTypes = [BLELayer, USBLayer];
+    }
     //!! if (isDevelopmentMode) layerTypes.push(MockLayer);
     await ConnectionManager.initialize(layerTypes).catch(console.error);
 }
