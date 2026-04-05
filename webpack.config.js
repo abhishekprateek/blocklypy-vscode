@@ -30,7 +30,6 @@ const extensionConfig = {
             vscode: 'commonjs vscode',
         },
         '@stoprocent/bluetooth-hci-socket',
-        'ws',
     ],
     resolve: {
         extensions: ['.ts', '.js', '.json'],
