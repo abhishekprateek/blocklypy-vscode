@@ -55,6 +55,9 @@
     "onDebugDynamicConfigurations:pybricks-tunnel"
   ],
   "main": "./dist/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
   "packageManager": "yarn@1.22.19",
   "extensionPack": [
     "ms-python.python",
