@@ -5,6 +5,7 @@ import { ConnectionManager } from './communication/connection-manager';
 import { BaseLayer } from './communication/layers/base-layer';
 import { BLELayer } from './communication/layers/ble-layer';
 import { USBLayer } from './communication/layers/usb-layer';
+import { WebBTBridgeLayer } from './communication/layers/web-bt-bridge-layer';
 import { MILLISECONDS_IN_SECOND } from './const';
 import { registerDebugTunnel } from './debug-tunnel/debug-tunnel';
 import { registerPybricksTunnelDebug } from './debug-tunnel/register';
@@ -106,7 +107,12 @@ async function deferredActivations(): Promise<void> {
     // Place any activations that can be deferred here
 
     // Finally, initialize the connection manager and auto-connect if needed
-    const layerTypes: (typeof BaseLayer)[] = [BLELayer, USBLayer];
+    // Use the Web Bluetooth Bridge layer when running in a browser (e.g. Codespaces),
+    // where native noble BLE is unavailable.
+    const layerTypes: (typeof BaseLayer)[] =
+        vscode.env.uiKind === vscode.UIKind.Web
+            ? [WebBTBridgeLayer]
+            : [BLELayer, USBLayer];
     //!! if (isDevelopmentMode) layerTypes.push(MockLayer);
     await ConnectionManager.initialize(layerTypes).catch(console.error);
 }

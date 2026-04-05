@@ -111,6 +111,16 @@ export class BaseLayer {
         return false;
     }
 
+    /** Connection timeout in milliseconds. Override for interactive flows. */
+    protected get connectionTimeoutMs(): number {
+        return (
+            Config.get<number>(
+                ConfigKeys.ConnectionTimeoutSec,
+                CONNECTION_TIMEOUT_SEC_DEFAULT,
+            ) * MILLISECONDS_IN_SECOND
+        );
+    }
+
     public async connect(id: string, devtype: string) {
         if (!BaseLayer.activeClient) throw new Error('Client not initialized');
         if (BaseLayer.activeClient.connected) await this.disconnect();
@@ -149,10 +159,7 @@ export class BaseLayer {
                             console.error('Error during client.connect:', err);
                             throw err;
                         }),
-                    Config.get<number>(
-                        ConfigKeys.ConnectionTimeoutSec,
-                        CONNECTION_TIMEOUT_SEC_DEFAULT,
-                    ) * MILLISECONDS_IN_SECOND,
+                    this.connectionTimeoutMs,
                 ),
             );
             if (error) throw error;

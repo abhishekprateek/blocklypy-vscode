@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-import { BLOCKLYPY_COMMANDS_VIEW_ID } from '../const';
 import { PYBRICKS_DEBUG_TYPE } from '../debug-tunnel/register';
 import { logDebug } from '../extension/debug-channel';
 import { runAsync, runPhase1Async } from '../logic/run';
+import { withViewProgress } from './utils';
 
 export async function compileOnlyAsync(
     isCompiled?: boolean,
@@ -25,9 +25,8 @@ export async function compileAndRunAsync(
     isCompiled?: boolean,
     debug = false,
 ): Promise<void> {
-    await vscode.window.withProgress(
+    await withViewProgress(
         {
-            location: { viewId: BLOCKLYPY_COMMANDS_VIEW_ID },
             cancellable: false,
         },
         async () => {

@@ -17,7 +17,8 @@ import {
 import { DeviceOSType, StartMode } from '../communication/clients/base-client';
 import { PybricksBleClient } from '../communication/clients/pybricks-ble-client';
 import { ConnectionManager } from '../communication/connection-manager';
-import { BLOCKLYPY_COMMANDS_VIEW_ID, EXTENSION_KEY } from '../const';
+import { withViewProgress } from '../commands/utils';
+import { EXTENSION_KEY } from '../const';
 import { loadPythonAssetModule } from '../logic/compile';
 import { hasState, StateProp } from '../logic/state';
 import { plotManager } from '../plot/plot';
@@ -61,7 +62,7 @@ export enum Commands {
     DatalogClear = EXTENSION_KEY + '.datalogClear',
     SetChartType = EXTENSION_KEY + '.setChartType',
     PromptDeviceNotificationPlotFilter = EXTENSION_KEY +
-        '.promptDeviceNotificationPlotFilter',
+    '.promptDeviceNotificationPlotFilter',
     StartREPL = EXTENSION_KEY + '.startREPL',
     StartHubMonitor = EXTENSION_KEY + '.startHubMonitor',
     InsertPybricksTemplate = EXTENSION_KEY + '.insertPybricksTemplate',
@@ -95,7 +96,7 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
         command: Commands.StatusPlaceHolder,
         title: 'Status',
         icon: '$(debug-stackframe)',
-        handler: async () => {},
+        handler: async () => { },
     },
     {
         command: Commands.DisplayNextView,
@@ -329,10 +330,8 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
             const { uri, content } = await loadPythonAssetModule('hubmonitor.min.py');
             if (!uri || !content) throw new Error('Hub Monitor script not found.');
 
-            await vscode.window.withProgress(
-                {
-                    location: { viewId: BLOCKLYPY_COMMANDS_VIEW_ID },
-                },
+            await withViewProgress(
+                {},
                 async () => {
                     await client.action_start(StartMode.REPL, content);
                     logDebug(
@@ -390,9 +389,9 @@ export function registerCommands(context: vscode.ExtensionContext) {
             return vscode.commands.registerCommand(
                 cmd.command,
                 getHandler(cmd) ??
-                    (() => {
-                        showInfo(`Command "${cmd.command}" not implemented yet.`);
-                    }),
+                (() => {
+                    showInfo(`Command "${cmd.command}" not implemented yet.`);
+                }),
             );
         }),
     );

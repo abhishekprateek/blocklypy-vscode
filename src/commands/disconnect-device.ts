@@ -1,8 +1,7 @@
-import * as vscode from 'vscode';
 import { ConnectionManager } from '../communication/connection-manager';
-import { BLOCKLYPY_COMMANDS_VIEW_ID } from '../const';
 import { hasState, StateProp } from '../logic/state';
 import { stopUserProgramAsync } from './stop-user-program';
+import { withViewProgress } from './utils';
 
 export async function disconnectDeviceAsync() {
     if (!hasState(StateProp.Connected)) {
@@ -13,9 +12,8 @@ export async function disconnectDeviceAsync() {
         await stopUserProgramAsync();
     }
 
-    await vscode.window.withProgress(
+    await withViewProgress(
         {
-            location: { viewId: BLOCKLYPY_COMMANDS_VIEW_ID },
             title: `Disconnecting from device...`,
         },
         async () => {

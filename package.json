@@ -814,6 +814,7 @@
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.20",
     "@types/node": "20.x",
+    "@types/ws": "^8.5.14",
     "@types/resolve": "^1.20.6",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.88.0",
@@ -857,6 +858,7 @@
     "serialport": "^12.0.0",
     "svg-pan-zoom": "^3.6.2",
     "uplot": "^1.6.32",
-    "usb": "^2.16.0"
+    "usb": "^2.16.0",
+    "ws": "^8.18.2"
   }
 }

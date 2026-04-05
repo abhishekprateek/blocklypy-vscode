@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import { ConnectionManager } from '../communication/connection-manager';
-import { BLOCKLYPY_COMMANDS_VIEW_ID, MILLISECONDS_IN_SECOND } from '../const';
+import { MILLISECONDS_IN_SECOND } from '../const';
 import { showError } from '../extension/diagnostics';
 import { hasState, StateProp } from '../logic/state';
+import { withViewProgress } from './utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function connectDeviceAsyncAny(...args: any[]): Promise<any> {
@@ -74,9 +75,8 @@ export async function connectDeviceAsync(id: string, devtype: string) {
         );
     }
 
-    await vscode.window.withProgress(
+    await withViewProgress(
         {
-            location: { viewId: BLOCKLYPY_COMMANDS_VIEW_ID },
             cancellable: false,
         },
         async () => {
