@@ -106,12 +106,17 @@ async function deferredActivations(): Promise<void> {
     // Place any activations that can be deferred here
 
     // Finally, initialize the connection manager and auto-connect if needed
-    // Use the Web Bluetooth Bridge layer when running in a browser (e.g. Codespaces),
-    // where native noble BLE is unavailable.
+    // Use the Web Bluetooth Bridge layer when running in a cloud remote
+    // (e.g. Codespaces) where native BLE/USB hardware is unavailable.
+    // Detection: vscode.env.remoteName is 'codespaces' in GitHub Codespaces.
+    // We also check UIKind.Web as a fallback for other browser-based environments.
     // WebBTBridgeLayer is imported dynamically to avoid pulling in `ws` (which is
     // a webpack external) on platforms where node_modules is not shipped.
+    const isCloudRemote =
+        vscode.env.remoteName === 'codespaces' ||
+        vscode.env.uiKind === vscode.UIKind.Web;
     let layerTypes: (typeof BaseLayer)[];
-    if (vscode.env.uiKind === vscode.UIKind.Web) {
+    if (isCloudRemote) {
         const { WebBTBridgeLayer } = await import('./communication/layers/web-bt-bridge-layer');
         layerTypes = [WebBTBridgeLayer];
     } else {
