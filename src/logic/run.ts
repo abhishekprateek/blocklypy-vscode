@@ -137,5 +137,11 @@ export async function runPhase2Async(args: runOptions): Promise<void> {
 
 export async function runAsync(args: runOptions): Promise<void> {
     await runPhase1Async(args);
+
+    // Auto-connect to the WebBT bridge if disconnected (e.g. BLE timeout).
+    if (!hasState(StateProp.Connected) || !ConnectionManager.client) {
+        await ConnectionManager.ensureConnectedAsync();
+    }
+
     await runPhase2Async(args);
 }

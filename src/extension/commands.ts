@@ -69,6 +69,8 @@ export enum Commands {
     CreatePybricksFile = EXTENSION_KEY + '.createPybricksFile',
     OpenHelpPortal = EXTENSION_KEY + '.openHelpPortal',
     InstallPybricksPackage = EXTENSION_KEY + '.installPybricksPackage',
+    OpenBtBridgePage = EXTENSION_KEY + '.openBtBridgePage',
+    CloseForwardedPorts = EXTENSION_KEY + '.closeForwardedPorts',
     // StartJupyter = EXTENSION_KEY + '.startJupyter',
 }
 
@@ -359,6 +361,22 @@ export const CommandMetaData: CommandMetaDataEntryExtended[] = [
         command: Commands.InstallPybricksPackage,
         handler: async () => {
             await promptInstallPybricks();
+        },
+    },
+    {
+        command: Commands.OpenBtBridgePage,
+        title: 'Open Bluetooth Bridge',
+        icon: '$(broadcast)',
+        handler: async () => {
+            await ConnectionManager.openBtBridgePage();
+        },
+    },
+    {
+        command: Commands.CloseForwardedPorts,
+        title: 'Close Forwarded Ports',
+        icon: '$(close-all)',
+        handler: async () => {
+            await ConnectionManager.closeForwardedPorts();
         },
     },
 ];

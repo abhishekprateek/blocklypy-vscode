@@ -306,6 +306,20 @@
         "title": "Install Pybricks Pip Package",
         "category": "BlocklyPy Commander",
         "icon": "$(package)"
+      },
+      {
+        "command": "blocklypy-vscode.openBtBridgePage",
+        "title": "Open Bluetooth Bridge",
+        "category": "BlocklyPy Commander",
+        "icon": "$(broadcast)",
+        "enablement": "blocklypy-vscode.isWebBtBridge"
+      },
+      {
+        "command": "blocklypy-vscode.closeForwardedPorts",
+        "title": "Close Forwarded Ports",
+        "category": "BlocklyPy Commander",
+        "icon": "$(close-all)",
+        "enablement": "blocklypy-vscode.isWebBtBridge"
       }
     ],
     "viewsContainers": {
@@ -522,6 +536,16 @@
           "command": "blocklypy-vscode.setChartType",
           "group": "navigation@4",
           "when": "view == blocklypy-vscode-datalogview && blocklypy-vscode.isPlotDataAvailable"
+        },
+        {
+          "command": "blocklypy-vscode.openBtBridgePage",
+          "group": "navigation@3",
+          "when": "view == blocklypy-vscode-commands-tree && blocklypy-vscode.isWebBtBridge"
+        },
+        {
+          "command": "blocklypy-vscode.closeForwardedPorts",
+          "group": "navigation@4",
+          "when": "view == blocklypy-vscode-commands-tree && blocklypy-vscode.isWebBtBridge"
         }
       ],
       "editor/title/run": [

@@ -26,6 +26,10 @@ import {
 
 const _BRIDGE_DEVICE_ID = 'hubos-ble:Web Bluetooth Bridge';
 
+// Prefer a fixed port so Codespaces reuses the same forwarded port across
+// restarts instead of accumulating stale forwarded ports.
+const BRIDGE_DEFAULT_PORT = 9580;
+
 // -----------------------------------------------------------------------
 // WebBTBridgeLayer
 //
@@ -70,11 +74,16 @@ export class WebBTBridgeLayer extends BaseLayer {
   private _bridgePageOpened = false;
 
   // -----------------------------------------------------------------------
-  // Public accessor used by WebBTBridgeClient
+  // Public accessors used by WebBTBridgeClient and ConnectionManager
   // -----------------------------------------------------------------------
 
   public get currentSocket(): WebSocket | undefined {
     return this._socket;
+  }
+
+  /** The port the bridge HTTP server is listening on. */
+  public get currentPort(): number | undefined {
+    return this._port;
   }
 
   /** Resolves when a browser page has opened a WS connection to us. */
@@ -121,7 +130,7 @@ export class WebBTBridgeLayer extends BaseLayer {
     // (e.g. from onDidChangeVisibility) must not open duplicate tabs.
     if (!this._bridgePageOpened) {
       this._bridgePageOpened = true;
-      await this._openBridgePage();
+      await this.openBridgePage();
     }
   }
 
@@ -184,16 +193,26 @@ export class WebBTBridgeLayer extends BaseLayer {
     this._wss.on('connection', (ws: WebSocket) => this._onWsConnection(ws));
     this._wss.on('error', (err) => console.error('WebBTBridge WSS error:', err));
 
-    await new Promise<void>((resolve, reject) => {
-      this._httpServer!.listen(0, '127.0.0.1', () => {
-        const addr = this._httpServer!.address();
-        if (addr && typeof addr === 'object') {
-          this._port = addr.port;
-        }
-        resolve();
+    // Try the fixed port first; fall back to an OS-assigned port if busy.
+    const tryListen = (port: number): Promise<void> =>
+      new Promise<void>((resolve, reject) => {
+        this._httpServer!.once('error', reject);
+        this._httpServer!.listen(port, '127.0.0.1', () => {
+          this._httpServer!.removeListener('error', reject);
+          const addr = this._httpServer!.address();
+          if (addr && typeof addr === 'object') {
+            this._port = addr.port;
+          }
+          resolve();
+        });
       });
-      this._httpServer!.once('error', reject);
-    });
+
+    try {
+      await tryListen(BRIDGE_DEFAULT_PORT);
+    } catch {
+      console.debug(`WebBTBridge: port ${BRIDGE_DEFAULT_PORT} busy, using OS-assigned port`);
+      await tryListen(0);
+    }
   }
 
   private _onWsConnection(ws: WebSocket): void {
@@ -227,7 +246,7 @@ export class WebBTBridgeLayer extends BaseLayer {
     } satisfies DeviceChangeEvent);
   }
 
-  private async _openBridgePage(): Promise<void> {
+  public async openBridgePage(): Promise<void> {
     try {
       const localUri = vscode.Uri.parse(`http://127.0.0.1:${this._port}/`);
       const externalUri = await vscode.env.asExternalUri(localUri);

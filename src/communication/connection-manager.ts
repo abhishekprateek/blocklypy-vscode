@@ -168,7 +168,7 @@ export class ConnectionManager {
             setState(
                 StateProp.Connected,
                 event.state === ConnectionState.Connected &&
-                    event.client.connected === true,
+                event.client.connected === true,
             );
             setState(StateProp.Connecting, event.state === ConnectionState.Connecting);
 
@@ -206,6 +206,128 @@ export class ConnectionManager {
             }
         }
         return undefined;
+    }
+
+    /** Open the Bluetooth Bridge page (only relevant for WebBTBridgeLayer). */
+    public static async openBtBridgePage(): Promise<void> {
+        const layer = this.layers.find((l) => l.descriptor.id === 'web-bt-bridge');
+        if (layer && 'openBridgePage' in layer) {
+            await (layer as { openBridgePage: () => Promise<void> }).openBridgePage();
+        }
+    }
+
+    /**
+     * Ensure a device is connected — if disconnected and the WebBT bridge
+     * layer is available, auto-connect to the bridge virtual device.
+     * Returns true if connected (or newly connected), false otherwise.
+     */
+    public static async ensureConnectedAsync(): Promise<boolean> {
+        if (hasState(StateProp.Connected) && this.client?.connected) return true;
+        if (hasState(StateProp.Connecting)) return false;
+
+        // Find the WebBT bridge layer
+        const bridgeLayer = this.layers.find(
+            (l) => l.descriptor.id === 'web-bt-bridge',
+        );
+        if (!bridgeLayer) return false;
+
+        // The virtual bridge device must exist
+        const bridgeDevice = bridgeLayer.allDevices.entries().next().value;
+        if (!bridgeDevice) return false;
+
+        const [, metadata] = bridgeDevice;
+        logDebug('🔄 Auto-reconnecting to Web Bluetooth Bridge…');
+        try {
+            await this.connect(metadata.id, metadata.deviceType);
+            return hasState(StateProp.Connected);
+        } catch (err) {
+            logDebug(`⚠️ Auto-reconnect failed: ${String(err)}`);
+            return false;
+        }
+    }
+
+    /**
+     * Close stale forwarded ports in Codespaces.
+     * Uses the `gh` CLI to list ports and VS Code's Ports panel for cleanup.
+     * @param silent - If true, suppress info messages (used on activation).
+     */
+    public static async closeForwardedPorts(silent = false): Promise<void> {
+        const codespace = process.env.CODESPACE_NAME;
+        if (!codespace) {
+            if (!silent) logDebug('⚠️ Not running in a Codespace — no forwarded ports to clean.');
+            return;
+        }
+
+        // Get the port our current bridge server is using (if any)
+        const bridgeLayer = this.layers.find(
+            (l) => l.descriptor.id === 'web-bt-bridge',
+        );
+        const currentPort = bridgeLayer && 'currentPort' in bridgeLayer
+            ? (bridgeLayer as { currentPort: number | undefined }).currentPort
+            : undefined;
+
+        try {
+            const { execSync } = await import('child_process');
+            const raw = execSync(
+                `gh codespace ports --codespace "${codespace}" --json sourcePort`,
+                { encoding: 'utf-8', timeout: 10_000 },
+            );
+            const ports: { sourcePort: number }[] = JSON.parse(raw);
+
+            // De-duplicate and find stale ports (not our current bridge port, not common dev ports)
+            const uniquePorts = [...new Set(ports.map((p) => p.sourcePort))];
+            const stalePorts = uniquePorts.filter((p) => p !== currentPort);
+
+            if (stalePorts.length === 0 && ports.length <= 1) {
+                if (!silent) logDebug('✅ No stale forwarded ports found.');
+                return;
+            }
+
+            // Count duplicate entries (sign of stale port accumulation)
+            const totalEntries = ports.length;
+            const duplicates = totalEntries - uniquePorts.length;
+
+            if (!silent) {
+                logDebug(
+                    `🔍 Found ${totalEntries} forwarded port entries (${uniquePorts.length} unique, ${duplicates} duplicates).` +
+                    (currentPort ? ` Current bridge port: ${currentPort}.` : ''),
+                );
+            }
+
+            // Try to close stale ports by stopping listeners
+            // (forwarded ports auto-close when nothing listens on them)
+            for (const port of stalePorts) {
+                try {
+                    execSync(`fuser -k ${port}/tcp 2>/dev/null`, { timeout: 5_000 });
+                } catch {
+                    // Port may not have a listener — that's fine
+                }
+            }
+
+            // Focus the Ports panel so the user can verify / manually close remaining ports
+            try {
+                await vscode.commands.executeCommand('~remote.forwardedPorts.focus');
+            } catch {
+                // Command may not exist in all environments
+            }
+
+            if (!silent) {
+                const msg = `Cleaned up ${stalePorts.length} stale forwarded port(s). Check the Ports panel for remaining entries.`;
+                logDebug(`✅ ${msg}`);
+                void vscode.window.showInformationMessage(msg);
+            }
+        } catch (err) {
+            if (!silent) {
+                logDebug(`⚠️ Failed to clean up forwarded ports: ${String(err)}`);
+                // Fallback: just open the Ports panel
+                try {
+                    await vscode.commands.executeCommand('~remote.forwardedPorts.focus');
+                } catch { /* ignore */ }
+                void vscode.window.showInformationMessage(
+                    'Could not automatically clean up ports. Use the Ports panel to close stale forwarded ports.',
+                );
+            }
+        }
     }
 
     public static async startScanning() {

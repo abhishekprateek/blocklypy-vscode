@@ -122,6 +122,7 @@ async function deferredActivations(): Promise<void> {
         const { WebBTBridgeLayer } = await import('./communication/layers/web-bt-bridge-layer');
         console.log('[BlocklyPy] WebBTBridgeLayer loaded successfully');
         layerTypes = [WebBTBridgeLayer];
+        await vscode.commands.executeCommand('setContext', 'blocklypy-vscode.isWebBtBridge', true);
     } else {
         layerTypes = [BLELayer, USBLayer];
     }
@@ -129,6 +130,12 @@ async function deferredActivations(): Promise<void> {
     await ConnectionManager.initialize(layerTypes).catch((err) => {
         console.error('[BlocklyPy] ConnectionManager.initialize failed:', err);
     });
+
+    // In Codespaces, clean up stale forwarded ports from previous sessions.
+    if (isCloudRemote) {
+        void ConnectionManager.closeForwardedPorts(true);
+    }
+
     console.log('[BlocklyPy] deferredActivations complete');
 }
 
